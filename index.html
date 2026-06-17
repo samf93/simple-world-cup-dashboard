@@ -83,7 +83,7 @@
   }
 
   /* ── Panels ── */
-  .panel { display: none; padding: 28px 24px; max-width: 1400px; margin: 0 auto; }
+  .panel { display: none; padding: 16px 12px; max-width: 1400px; margin: 0 auto; }
   .panel.active { display: block; }
 
   /* ── Chart card wrapper ── */
@@ -91,9 +91,13 @@
     background: var(--surface);
     border: 1px solid var(--border2);
     border-radius: 12px;
-    padding: 20px;
+    padding: 14px 12px;
     box-shadow: 0 4px 24px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,209,102,0.04);
-    margin-bottom: 20px;
+    margin-bottom: 16px;
+  }
+  /* Predictions card: no inner padding so the table fills edge-to-edge */
+  .chart-card.predictions-card {
+    padding: 14px 12px 0;
   }
 
   .section-title {
@@ -133,17 +137,22 @@
   }
 
   /* ── Round nav ── */
-  .round-nav { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .round-nav { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 0; }
   .round-nav button {
     background: var(--surface2); color: var(--muted);
     border: 1px solid var(--border); border-radius: 20px;
     padding: 5px 14px; cursor: pointer; font-size: 0.82rem; font-weight: 500;
-    transition: all .2s;
+    white-space: nowrap; transition: all .2s;
   }
   .round-nav button:hover {
     background: var(--border2); color: var(--accent);
     border-color: var(--accent2);
     box-shadow: 0 0 8px rgba(255,209,102,0.15);
+  }
+  /* Nav + diff-button row */
+  .nav-controls {
+    display: flex; flex-wrap: wrap; align-items: center;
+    gap: 8px; margin-bottom: 12px;
   }
 
   /* ── Differentiator toggle button ── */
@@ -480,10 +489,10 @@
   </div>
 </div>
 <div id="grid"    class="panel">
-<div class="chart-card">
-<div class="section-title">Predictions</div>
-<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:10px;">
-  <div class="round-nav" style="margin-bottom:0;"><button onclick="scrollToRound('r1')">Group Stage: Part 1</button>
+<div class="chart-card predictions-card">
+<div class="section-title" style="padding:0 0 14px;">Predictions</div>
+<div class="nav-controls">
+  <div class="round-nav"><button onclick="scrollToRound('r1')">Group Stage: Part 1</button>
 </div>
   <button id="diff-btn" class="diff-toggle" onclick="toggleDiff()">
     ✦ Show differentiators
@@ -713,7 +722,7 @@
   <div class="chart-card">
     <div class="section-title">Accuracy vs Contrarianism</div>
     
-<div id="scatter-container" style="max-width:860px;margin:0 auto;">
+<div id="scatter-container" style="width:100%;max-width:900px;margin:0 auto;">
 
   <!-- Chart area -->
   <svg id="scatter-svg" width="100%" viewBox="0 0 860 560"
