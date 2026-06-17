@@ -223,6 +223,40 @@
     transition: transform .1s;
   }
   .cell:hover { transform: scale(1.08); z-index: 2; position: relative; }
+
+  /* ── News ticker ── */
+  .ticker-wrap {
+    background: linear-gradient(90deg, #080d13, #0f1923 10%, #0f1923 90%, #080d13);
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+    height: 34px;
+    display: flex;
+    align-items: center;
+  }
+  .ticker-track {
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    animation: ticker-scroll linear infinite;
+    will-change: transform;
+  }
+  @keyframes ticker-scroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+  .ticker-item {
+    font-size: 0.82rem;
+    color: var(--text);
+    padding: 0 20px;
+    letter-spacing: 0.01em;
+  }
+  .ticker-item:first-of-type { color: var(--accent); font-weight: 700; }
+  .ticker-sep {
+    color: var(--accent);
+    opacity: 0.4;
+    font-size: 0.6rem;
+    flex-shrink: 0;
+  }
 </style>
 </head>
 <body>
@@ -230,6 +264,14 @@
 <header>
   <h1><span class="emoji">⚽</span>World Cup 2026 Prediction Contest</h1>
 </header>
+
+
+<div class="ticker-wrap">
+  <div class="ticker-track" style="animation-duration:318s">
+    <span class="ticker-item">STANDINGS:  🥇 Gwyn Thomas (13 pts)  ·  🥈 Adrienne (11 pts)  ·  🥈 JohnnyJ (11 pts)  ·  🥈 El Roxinho (11 pts)</span><span class="ticker-sep">◆</span><span class="ticker-item">💔 Sam backed POR but it ended in a draw (POR v COD)</span><span class="ticker-sep">◆</span><span class="ticker-item">💔 Adrienne backed POR but it ended in a draw (POR v COD)</span><span class="ticker-sep">◆</span><span class="ticker-item">💪 El Roxinho's call on POR v COD paid off!</span><span class="ticker-sep">◆</span><span class="ticker-item">😱 Nobody saw a draw coming in KSA v URU!</span><span class="ticker-sep">◆</span><span class="ticker-item">⭐ Gwyn Thomas leads the bonus rounds with 5 pts</span><span class="ticker-sep">◆</span><span class="ticker-item">📅 Up next:  <span class="fi fi-gb-eng" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>ENG v <span class="fi fi-hr" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>CRO  ·  <span class="fi fi-gh" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>GHA v <span class="fi fi-pa" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>PAN  ·  <span class="fi fi-uz" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>UZB v <span class="fi fi-co" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>COL</span><span class="ticker-sep">◆</span><span class="ticker-item">STANDINGS:  🥇 Gwyn Thomas (13 pts)  ·  🥈 Adrienne (11 pts)  ·  🥈 JohnnyJ (11 pts)  ·  🥈 El Roxinho (11 pts)</span><span class="ticker-sep">◆</span><span class="ticker-item">💔 Sam backed POR but it ended in a draw (POR v COD)</span><span class="ticker-sep">◆</span><span class="ticker-item">💔 Adrienne backed POR but it ended in a draw (POR v COD)</span><span class="ticker-sep">◆</span><span class="ticker-item">💪 El Roxinho's call on POR v COD paid off!</span><span class="ticker-sep">◆</span><span class="ticker-item">😱 Nobody saw a draw coming in KSA v URU!</span><span class="ticker-sep">◆</span><span class="ticker-item">⭐ Gwyn Thomas leads the bonus rounds with 5 pts</span><span class="ticker-sep">◆</span><span class="ticker-item">📅 Up next:  <span class="fi fi-gb-eng" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>ENG v <span class="fi fi-hr" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>CRO  ·  <span class="fi fi-gh" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>GHA v <span class="fi fi-pa" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>PAN  ·  <span class="fi fi-uz" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>UZB v <span class="fi fi-co" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>COL</span><span class="ticker-sep">◆</span>
+  </div>
+</div>
+
 
 <nav class="tabs">
   <button class="tab active" onclick="showTab('race',this)">🏁 The Race</button>
@@ -249,8 +291,8 @@
   <!-- Controls -->
   <div style="display:flex;align-items:center;gap:14px;margin-top:14px;padding:0 4px;">
     <button id="race-play" class="play-btn">▶ Play</button>
-    <input id="race-slider" type="range" min="0" max="19"
-           value="19"
+    <input id="race-slider" type="range" min="0" max="21"
+           value="21"
            style="flex:1;accent-color:#ffd166;min-width:0;">
   </div>
   <div style="text-align:center;margin-top:6px;">
@@ -261,7 +303,7 @@
 
 <script>
 (function() {
-  const DATA    = {"players": ["Sam", "Adrienne", "JohnnyJ", "Gwyn Thomas", "Matt", "El Roxinho"], "gaps": {"Sam": [0.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 4.0], "Adrienne": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.0], "JohnnyJ": [0.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 3.0, 2.0, 2.0, 3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 2.0], "Gwyn Thomas": [0.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 2.0, 2.0, 2.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 0.0], "Matt": [0.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 4.0], "El Roxinho": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0]}, "steps": [{"x_label": "1", "tooltip": "#1: MEX v RSA", "is_bonus": false}, {"x_label": "2", "tooltip": "#2: KOR v CZE", "is_bonus": false}, {"x_label": "3", "tooltip": "#3: CAN v BIH", "is_bonus": false}, {"x_label": "4", "tooltip": "#4: USA v PAR", "is_bonus": false}, {"x_label": "5", "tooltip": "#5: QAT v SUI", "is_bonus": false}, {"x_label": "6", "tooltip": "#6: BRA v MAR", "is_bonus": false}, {"x_label": "7", "tooltip": "#7: HAI v SCO", "is_bonus": false}, {"x_label": "8", "tooltip": "#8: AUS v TUR", "is_bonus": false}, {"x_label": "9", "tooltip": "#9: GER v CUW", "is_bonus": false}, {"x_label": "10", "tooltip": "#10: NED v JPN", "is_bonus": false}, {"x_label": "11", "tooltip": "#11: CIV v ECU", "is_bonus": false}, {"x_label": "12", "tooltip": "#12: SWE v TUN", "is_bonus": false}, {"x_label": "13", "tooltip": "#13: ESP v CPV", "is_bonus": false}, {"x_label": "14", "tooltip": "#14: BEL v EGY", "is_bonus": false}, {"x_label": "15", "tooltip": "#15: KSA v URU", "is_bonus": false}, {"x_label": "16", "tooltip": "#16: IRN v NZL", "is_bonus": false}, {"x_label": "17", "tooltip": "#17: FRA v SEN", "is_bonus": false}, {"x_label": "18", "tooltip": "#18: IRQ v NOR", "is_bonus": false}, {"x_label": "19", "tooltip": "#19: ARG v ALG", "is_bonus": false}, {"x_label": "B1", "tooltip": "Bonus: Trump Truth Social posts about the World Cup in first 3 days", "is_bonus": true}], "round_boundaries": []};
+  const DATA    = {"players": ["Sam", "Adrienne", "JohnnyJ", "Gwyn Thomas", "Matt", "El Roxinho"], "gaps": {"Sam": [0.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 4.0], "Adrienne": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.0], "JohnnyJ": [0.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 3.0, 2.0, 2.0, 3.0, 3.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0], "Gwyn Thomas": [0.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 2.0, 2.0, 2.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 0.0], "Matt": [0.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 4.0], "El Roxinho": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 3.0, 3.0, 2.0, 2.0]}, "steps": [{"x_label": "1", "tooltip": "#1: MEX v RSA", "is_bonus": false}, {"x_label": "2", "tooltip": "#2: KOR v CZE", "is_bonus": false}, {"x_label": "3", "tooltip": "#3: CAN v BIH", "is_bonus": false}, {"x_label": "4", "tooltip": "#4: USA v PAR", "is_bonus": false}, {"x_label": "5", "tooltip": "#5: QAT v SUI", "is_bonus": false}, {"x_label": "6", "tooltip": "#6: BRA v MAR", "is_bonus": false}, {"x_label": "7", "tooltip": "#7: HAI v SCO", "is_bonus": false}, {"x_label": "8", "tooltip": "#8: AUS v TUR", "is_bonus": false}, {"x_label": "9", "tooltip": "#9: GER v CUW", "is_bonus": false}, {"x_label": "10", "tooltip": "#10: NED v JPN", "is_bonus": false}, {"x_label": "11", "tooltip": "#11: CIV v ECU", "is_bonus": false}, {"x_label": "12", "tooltip": "#12: SWE v TUN", "is_bonus": false}, {"x_label": "13", "tooltip": "#13: ESP v CPV", "is_bonus": false}, {"x_label": "14", "tooltip": "#14: BEL v EGY", "is_bonus": false}, {"x_label": "15", "tooltip": "#15: KSA v URU", "is_bonus": false}, {"x_label": "16", "tooltip": "#16: IRN v NZL", "is_bonus": false}, {"x_label": "17", "tooltip": "#17: FRA v SEN", "is_bonus": false}, {"x_label": "18", "tooltip": "#18: IRQ v NOR", "is_bonus": false}, {"x_label": "19", "tooltip": "#19: ARG v ALG", "is_bonus": false}, {"x_label": "20", "tooltip": "#20: AUT v JOR", "is_bonus": false}, {"x_label": "21", "tooltip": "#21: POR v COD", "is_bonus": false}, {"x_label": "B1", "tooltip": "Bonus: Trump Truth Social posts about the World Cup in first 3 days", "is_bonus": true}], "round_boundaries": []};
   const PALETTE = ["#E63946", "#457B9D", "#2A9D8F", "#a78bfa", "#F4A261", "#60a5fa"];
   const PLAYERS = DATA.players;
   const GAPS    = DATA.gaps;    // { player: [gap0, gap1, ...] }
@@ -375,6 +417,17 @@
       .on("click", () => togglePlayer(p));
   });
 
+  // ── Hover dots (appear on nearest step when hovering a player line) ───────────
+  const hoverDots = {};
+  PLAYERS.forEach(p => {
+    hoverDots[p] = g.append("circle")
+      .attr("r", 0)
+      .attr("fill", color(p))
+      .attr("stroke", "white").attr("stroke-width", 2)
+      .attr("pointer-events", "none")
+      .style("filter", `drop-shadow(0 0 6px ${color(p)})`);
+  });
+
   // ── Hover tooltip on hit areas ───────────────────────────────────────────────
   PLAYERS.forEach(p => {
     hitEls[p]
@@ -387,6 +440,12 @@
           if (dist < bestDist) { bestDist = dist; best = i; }
         });
         const gap = GAPS[p][best];
+
+        // Show hover dot at that position
+        hoverDots[p]
+          .attr("cx", x(best)).attr("cy", y(gap))
+          .attr("r", 6);
+
         tooltip
           .style("opacity", 1)
           .style("left", (event.pageX + 12) + "px")
@@ -395,7 +454,10 @@
                  ${STEPS[best].tooltip}<br>
                  ${gap === 0 ? "🥇 Leading" : `${gap} pts behind`}`);
       })
-      .on("mouseleave", () => tooltip.style("opacity", 0));
+      .on("mouseleave", () => {
+        hoverDots[p].attr("r", 0);
+        tooltip.style("opacity", 0);
+      });
   });
 
   // ── Click-to-hide ────────────────────────────────────────────────────────────
@@ -549,8 +611,8 @@
 <td><div class="cell" style="background:#1a7a4a" title="France"><span class="fi fi-fr" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>FRA</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="Norway"><span class="fi fi-no" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>NOR</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="Argentina" data-diff="1"><span class="fi fi-ar" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>ARG</span></div></td>
-<td><div class="cell" style="background:#1e3a5f" title="Austria"><span class="fi fi-at" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>AUT</span></div></td>
-<td><div class="cell" style="background:#1e3a5f" title="Portugal"><span class="fi fi-pt" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>POR</span></div></td>
+<td><div class="cell" style="background:#1a7a4a" title="Austria"><span class="fi fi-at" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>AUT</span></div></td>
+<td><div class="cell" style="background:#8b2020" title="Portugal"><span class="fi fi-pt" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>POR</span></div></td>
 <td><div class="cell" style="background:#1e3a5f" title="England"><span class="fi fi-gb-eng" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>ENG</span></div></td>
 <td><div class="cell" style="background:#1e3a5f" title="Ghana"><span class="fi fi-gh" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>GHA</span></div></td>
 <td><div class="cell" style="background:#1e3a5f" title="Colombia"><span class="fi fi-co" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>COL</span></div></td>
@@ -574,8 +636,8 @@
 <td><div class="cell" style="background:#1a7a4a" title="France"><span class="fi fi-fr" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>FRA</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="Norway"><span class="fi fi-no" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>NOR</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="Argentina" data-diff="1"><span class="fi fi-ar" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>ARG</span></div></td>
-<td><div class="cell" style="background:#1e3a5f" title="Austria"><span class="fi fi-at" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>AUT</span></div></td>
-<td><div class="cell" style="background:#1e3a5f" title="Portugal"><span class="fi fi-pt" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>POR</span></div></td>
+<td><div class="cell" style="background:#1a7a4a" title="Austria"><span class="fi fi-at" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>AUT</span></div></td>
+<td><div class="cell" style="background:#8b2020" title="Portugal"><span class="fi fi-pt" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>POR</span></div></td>
 <td><div class="cell" style="background:#1e3a5f" title="England"><span class="fi fi-gb-eng" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>ENG</span></div></td>
 <td><div class="cell" style="background:#1e3a5f" title="Ghana"><span class="fi fi-gh" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>GHA</span></div></td>
 <td><div class="cell" style="background:#1e3a5f" title="Colombia"><span class="fi fi-co" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>COL</span></div></td>
@@ -599,8 +661,8 @@
 <td><div class="cell" style="background:#1a7a4a" title="France"><span class="fi fi-fr" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>FRA</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="Norway"><span class="fi fi-no" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>NOR</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="Argentina" data-diff="1"><span class="fi fi-ar" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>ARG</span></div></td>
-<td><div class="cell" style="background:#1e3a5f" title="Austria"><span class="fi fi-at" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>AUT</span></div></td>
-<td><div class="cell" style="background:#1e3a5f" title="Portugal"><span class="fi fi-pt" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>POR</span></div></td>
+<td><div class="cell" style="background:#1a7a4a" title="Austria"><span class="fi fi-at" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>AUT</span></div></td>
+<td><div class="cell" style="background:#8b2020" title="Portugal"><span class="fi fi-pt" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>POR</span></div></td>
 <td><div class="cell" style="background:#1e3a5f" title="England"><span class="fi fi-gb-eng" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>ENG</span></div></td>
 <td><div class="cell" style="background:#1e3a5f" title="Ghana"><span class="fi fi-gh" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>GHA</span></div></td>
 <td><div class="cell" style="background:#1e3a5f" title="Colombia"><span class="fi fi-co" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>COL</span></div></td>
@@ -624,8 +686,8 @@
 <td><div class="cell" style="background:#1a7a4a" title="France"><span class="fi fi-fr" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>FRA</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="Norway"><span class="fi fi-no" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>NOR</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="Argentina" data-diff="1"><span class="fi fi-ar" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>ARG</span></div></td>
-<td><div class="cell" style="background:#1e3a5f" title="Austria"><span class="fi fi-at" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>AUT</span></div></td>
-<td><div class="cell" style="background:#1e3a5f" title="Portugal"><span class="fi fi-pt" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>POR</span></div></td>
+<td><div class="cell" style="background:#1a7a4a" title="Austria"><span class="fi fi-at" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>AUT</span></div></td>
+<td><div class="cell" style="background:#8b2020" title="Portugal"><span class="fi fi-pt" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>POR</span></div></td>
 <td><div class="cell" style="background:#1e3a5f" title="England"><span class="fi fi-gb-eng" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>ENG</span></div></td>
 <td><div class="cell" style="background:#1e3a5f" title="Panama"><span class="fi fi-pa" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>PAN</span></div></td>
 <td><div class="cell" style="background:#1e3a5f" title="Colombia"><span class="fi fi-co" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>COL</span></div></td>
@@ -649,8 +711,8 @@
 <td><div class="cell" style="background:#1a7a4a" title="France"><span class="fi fi-fr" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>FRA</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="Norway"><span class="fi fi-no" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>NOR</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="Argentina" data-diff="1"><span class="fi fi-ar" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>ARG</span></div></td>
-<td><div class="cell" style="background:#1e3a5f" title="Austria"><span class="fi fi-at" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>AUT</span></div></td>
-<td><div class="cell" style="background:#1e3a5f" title="Portugal"><span class="fi fi-pt" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>POR</span></div></td>
+<td><div class="cell" style="background:#1a7a4a" title="Austria"><span class="fi fi-at" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>AUT</span></div></td>
+<td><div class="cell" style="background:#8b2020" title="Portugal"><span class="fi fi-pt" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>POR</span></div></td>
 <td><div class="cell" style="background:#1e3a5f" title="England"><span class="fi fi-gb-eng" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>ENG</span></div></td>
 <td><div class="cell" style="background:#1e3a5f" title="Ghana"><span class="fi fi-gh" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>GHA</span></div></td>
 <td><div class="cell" style="background:#1e3a5f" title="Colombia"><span class="fi fi-co" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>COL</span></div></td>
@@ -674,8 +736,8 @@
 <td><div class="cell" style="background:#1a7a4a" title="France"><span class="fi fi-fr" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>FRA</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="Norway"><span class="fi fi-no" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>NOR</span></div></td>
 <td><div class="cell" style="background:#8b2020" title="Draw"><span>Draw</span></div></td>
-<td><div class="cell" style="background:#1e3a5f" title="Austria"><span class="fi fi-at" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>AUT</span></div></td>
-<td><div class="cell" style="background:#1e3a5f" title="Draw"><span>Draw</span></div></td>
+<td><div class="cell" style="background:#1a7a4a" title="Austria"><span class="fi fi-at" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>AUT</span></div></td>
+<td><div class="cell" style="background:#1a7a4a" title="Draw" data-diff="1"><span>Draw</span></div></td>
 <td><div class="cell" style="background:#1e3a5f" title="Draw"><span>Draw</span></div></td>
 <td><div class="cell" style="background:#1e3a5f" title="Draw"><span>Draw</span></div></td>
 <td><div class="cell" style="background:#1e3a5f" title="Colombia"><span class="fi fi-co" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>COL</span></div></td>
@@ -731,7 +793,7 @@
   <!-- Controls -->
   <div style="display:flex;align-items:center;gap:14px;margin-top:14px;padding:0 12.5%;">
     <button id="sc-play" class="play-btn">▶ Play</button>
-    <input id="sc-slider" type="range" min="0" max="18" value="18"
+    <input id="sc-slider" type="range" min="0" max="20" value="20"
            style="flex:1;accent-color:#ffd166;min-width:0;">
   </div>
   <div style="text-align:center;margin-top:6px;">
@@ -742,7 +804,7 @@
 
 <script>
 (function() {
-  const STEPS     = [{"fixture": 1, "label": "MEX v RSA", "round": "Group Stage: Part 1", "players": [{"name": "Sam", "acc": 1.0, "cont": 0.0}, {"name": "Adrienne", "acc": 1.0, "cont": 0.0}, {"name": "JohnnyJ", "acc": 1.0, "cont": 0.0}, {"name": "Gwyn Thomas", "acc": 1.0, "cont": 0.0}, {"name": "Matt", "acc": 1.0, "cont": 0.0}, {"name": "El Roxinho", "acc": 1.0, "cont": 0.0}]}, {"fixture": 2, "label": "KOR v CZE", "round": "Group Stage: Part 1", "players": [{"name": "Sam", "acc": 0.5, "cont": 0.4}, {"name": "Adrienne", "acc": 1.0, "cont": 0.4}, {"name": "JohnnyJ", "acc": 0.5, "cont": 0.4}, {"name": "Gwyn Thomas", "acc": 0.5, "cont": 0.4}, {"name": "Matt", "acc": 0.5, "cont": 0.4}, {"name": "El Roxinho", "acc": 1.0, "cont": 0.4}]}, {"fixture": 3, "label": "CAN v BIH", "round": "Group Stage: Part 1", "players": [{"name": "Sam", "acc": 0.3333, "cont": 0.2667}, {"name": "Adrienne", "acc": 0.6667, "cont": 0.2667}, {"name": "JohnnyJ", "acc": 0.3333, "cont": 0.2667}, {"name": "Gwyn Thomas", "acc": 0.3333, "cont": 0.2667}, {"name": "Matt", "acc": 0.3333, "cont": 0.2667}, {"name": "El Roxinho", "acc": 0.6667, "cont": 0.2667}]}, {"fixture": 4, "label": "USA v PAR", "round": "Group Stage: Part 1", "players": [{"name": "Sam", "acc": 0.25, "cont": 0.45}, {"name": "Adrienne", "acc": 0.5, "cont": 0.35}, {"name": "JohnnyJ", "acc": 0.25, "cont": 0.35}, {"name": "Gwyn Thomas", "acc": 0.5, "cont": 0.4}, {"name": "Matt", "acc": 0.5, "cont": 0.4}, {"name": "El Roxinho", "acc": 0.5, "cont": 0.35}]}, {"fixture": 5, "label": "QAT v SUI", "round": "Group Stage: Part 1", "players": [{"name": "Sam", "acc": 0.2, "cont": 0.44}, {"name": "Adrienne", "acc": 0.6, "cont": 0.44}, {"name": "JohnnyJ", "acc": 0.2, "cont": 0.36}, {"name": "Gwyn Thomas", "acc": 0.4, "cont": 0.4}, {"name": "Matt", "acc": 0.4, "cont": 0.4}, {"name": "El Roxinho", "acc": 0.6, "cont": 0.44}]}, {"fixture": 6, "label": "BRA v MAR", "round": "Group Stage: Part 1", "players": [{"name": "Sam", "acc": 0.1667, "cont": 0.4333}, {"name": "Adrienne", "acc": 0.5, "cont": 0.4333}, {"name": "JohnnyJ", "acc": 0.1667, "cont": 0.3667}, {"name": "Gwyn Thomas", "acc": 0.3333, "cont": 0.4}, {"name": "Matt", "acc": 0.3333, "cont": 0.4667}, {"name": "El Roxinho", "acc": 0.5, "cont": 0.5}]}, {"fixture": 7, "label": "HAI v SCO", "round": "Group Stage: Part 1", "players": [{"name": "Sam", "acc": 0.2857, "cont": 0.4}, {"name": "Adrienne", "acc": 0.5714, "cont": 0.4}, {"name": "JohnnyJ", "acc": 0.2857, "cont": 0.3429}, {"name": "Gwyn Thomas", "acc": 0.4286, "cont": 0.3714}, {"name": "Matt", "acc": 0.4286, "cont": 0.4286}, {"name": "El Roxinho", "acc": 0.4286, "cont": 0.5714}]}, {"fixture": 8, "label": "AUS v TUR", "round": "Group Stage: Part 1", "players": [{"name": "Sam", "acc": 0.25, "cont": 0.425}, {"name": "Adrienne", "acc": 0.5, "cont": 0.45}, {"name": "JohnnyJ", "acc": 0.25, "cont": 0.375}, {"name": "Gwyn Thomas", "acc": 0.5, "cont": 0.45}, {"name": "Matt", "acc": 0.375, "cont": 0.475}, {"name": "El Roxinho", "acc": 0.375, "cont": 0.575}]}, {"fixture": 9, "label": "GER v CUW", "round": "Group Stage: Part 1", "players": [{"name": "Sam", "acc": 0.3333, "cont": 0.4}, {"name": "Adrienne", "acc": 0.5556, "cont": 0.4222}, {"name": "JohnnyJ", "acc": 0.3333, "cont": 0.3556}, {"name": "Gwyn Thomas", "acc": 0.4444, "cont": 0.5111}, {"name": "Matt", "acc": 0.4444, "cont": 0.4444}, {"name": "El Roxinho", "acc": 0.4444, "cont": 0.5333}]}, {"fixture": 10, "label": "NED v JPN", "round": "Group Stage: Part 1", "players": [{"name": "Sam", "acc": 0.3, "cont": 0.36}, {"name": "Adrienne", "acc": 0.5, "cont": 0.38}, {"name": "JohnnyJ", "acc": 0.3, "cont": 0.32}, {"name": "Gwyn Thomas", "acc": 0.4, "cont": 0.46}, {"name": "Matt", "acc": 0.4, "cont": 0.4}, {"name": "El Roxinho", "acc": 0.4, "cont": 0.48}]}, {"fixture": 11, "label": "CIV v ECU", "round": "Group Stage: Part 1", "players": [{"name": "Sam", "acc": 0.3636, "cont": 0.4}, {"name": "Adrienne", "acc": 0.5455, "cont": 0.4182}, {"name": "JohnnyJ", "acc": 0.2727, "cont": 0.3455}, {"name": "Gwyn Thomas", "acc": 0.3636, "cont": 0.4727}, {"name": "Matt", "acc": 0.3636, "cont": 0.4545}, {"name": "El Roxinho", "acc": 0.3636, "cont": 0.4909}]}, {"fixture": 12, "label": "SWE v TUN", "round": "Group Stage: Part 1", "players": [{"name": "Sam", "acc": 0.3333, "cont": 0.4167}, {"name": "Adrienne", "acc": 0.5, "cont": 0.4333}, {"name": "JohnnyJ", "acc": 0.3333, "cont": 0.3833}, {"name": "Gwyn Thomas", "acc": 0.3333, "cont": 0.5167}, {"name": "Matt", "acc": 0.4167, "cont": 0.4833}, {"name": "El Roxinho", "acc": 0.3333, "cont": 0.5}]}, {"fixture": 13, "label": "ESP v CPV", "round": "Group Stage: Part 1", "players": [{"name": "Sam", "acc": 0.3077, "cont": 0.3846}, {"name": "Adrienne", "acc": 0.4615, "cont": 0.4}, {"name": "JohnnyJ", "acc": 0.3077, "cont": 0.3538}, {"name": "Gwyn Thomas", "acc": 0.3077, "cont": 0.4769}, {"name": "Matt", "acc": 0.3846, "cont": 0.4462}, {"name": "El Roxinho", "acc": 0.3077, "cont": 0.4615}]}, {"fixture": 14, "label": "BEL v EGY", "round": "Group Stage: Part 1", "players": [{"name": "Sam", "acc": 0.3571, "cont": 0.4}, {"name": "Adrienne", "acc": 0.5, "cont": 0.4143}, {"name": "JohnnyJ", "acc": 0.2857, "cont": 0.3714}, {"name": "Gwyn Thomas", "acc": 0.2857, "cont": 0.4857}, {"name": "Matt", "acc": 0.3571, "cont": 0.4571}, {"name": "El Roxinho", "acc": 0.3571, "cont": 0.4714}]}, {"fixture": 15, "label": "KSA v URU", "round": "Group Stage: Part 1", "players": [{"name": "Sam", "acc": 0.3333, "cont": 0.3867}, {"name": "Adrienne", "acc": 0.4667, "cont": 0.4}, {"name": "JohnnyJ", "acc": 0.2667, "cont": 0.36}, {"name": "Gwyn Thomas", "acc": 0.2667, "cont": 0.52}, {"name": "Matt", "acc": 0.3333, "cont": 0.44}, {"name": "El Roxinho", "acc": 0.3333, "cont": 0.4533}]}, {"fixture": 16, "label": "IRN v NZL", "round": "Group Stage: Part 1", "players": [{"name": "Sam", "acc": 0.3125, "cont": 0.4125}, {"name": "Adrienne", "acc": 0.4375, "cont": 0.4125}, {"name": "JohnnyJ", "acc": 0.3125, "cont": 0.4}, {"name": "Gwyn Thomas", "acc": 0.25, "cont": 0.5375}, {"name": "Matt", "acc": 0.3125, "cont": 0.45}, {"name": "El Roxinho", "acc": 0.3125, "cont": 0.4625}]}, {"fixture": 17, "label": "FRA v SEN", "round": "Group Stage: Part 1", "players": [{"name": "Sam", "acc": 0.3529, "cont": 0.3882}, {"name": "Adrienne", "acc": 0.4706, "cont": 0.3882}, {"name": "JohnnyJ", "acc": 0.3529, "cont": 0.3765}, {"name": "Gwyn Thomas", "acc": 0.2941, "cont": 0.5059}, {"name": "Matt", "acc": 0.3529, "cont": 0.4235}, {"name": "El Roxinho", "acc": 0.3529, "cont": 0.4353}]}, {"fixture": 18, "label": "IRQ v NOR", "round": "Group Stage: Part 1", "players": [{"name": "Sam", "acc": 0.3889, "cont": 0.3667}, {"name": "Adrienne", "acc": 0.5, "cont": 0.3667}, {"name": "JohnnyJ", "acc": 0.3889, "cont": 0.3556}, {"name": "Gwyn Thomas", "acc": 0.3333, "cont": 0.4778}, {"name": "Matt", "acc": 0.3889, "cont": 0.4}, {"name": "El Roxinho", "acc": 0.3889, "cont": 0.4111}]}, {"fixture": 19, "label": "ARG v ALG", "round": "Group Stage: Part 1", "players": [{"name": "Sam", "acc": 0.4211, "cont": 0.3579}, {"name": "Adrienne", "acc": 0.5263, "cont": 0.3579}, {"name": "JohnnyJ", "acc": 0.4211, "cont": 0.3474}, {"name": "Gwyn Thomas", "acc": 0.3684, "cont": 0.4632}, {"name": "Matt", "acc": 0.4211, "cont": 0.3895}, {"name": "El Roxinho", "acc": 0.3684, "cont": 0.4421}]}];
+  const STEPS     = [{"fixture": 1, "label": "MEX v RSA", "round": "Group Stage: Part 1", "players": [{"name": "Sam", "acc": 1.0, "cont": 0.0}, {"name": "Adrienne", "acc": 1.0, "cont": 0.0}, {"name": "JohnnyJ", "acc": 1.0, "cont": 0.0}, {"name": "Gwyn Thomas", "acc": 1.0, "cont": 0.0}, {"name": "Matt", "acc": 1.0, "cont": 0.0}, {"name": "El Roxinho", "acc": 1.0, "cont": 0.0}]}, {"fixture": 2, "label": "KOR v CZE", "round": "Group Stage: Part 1", "players": [{"name": "Sam", "acc": 0.5, "cont": 0.4}, {"name": "Adrienne", "acc": 1.0, "cont": 0.4}, {"name": "JohnnyJ", "acc": 0.5, "cont": 0.4}, {"name": "Gwyn Thomas", "acc": 0.5, "cont": 0.4}, {"name": "Matt", "acc": 0.5, "cont": 0.4}, {"name": "El Roxinho", "acc": 1.0, "cont": 0.4}]}, {"fixture": 3, "label": "CAN v BIH", "round": "Group Stage: Part 1", "players": [{"name": "Sam", "acc": 0.3333, "cont": 0.2667}, {"name": "Adrienne", "acc": 0.6667, "cont": 0.2667}, {"name": "JohnnyJ", "acc": 0.3333, "cont": 0.2667}, {"name": "Gwyn Thomas", "acc": 0.3333, "cont": 0.2667}, {"name": "Matt", "acc": 0.3333, "cont": 0.2667}, {"name": "El Roxinho", "acc": 0.6667, "cont": 0.2667}]}, {"fixture": 4, "label": "USA v PAR", "round": "Group Stage: Part 1", "players": [{"name": "Sam", "acc": 0.25, "cont": 0.45}, {"name": "Adrienne", "acc": 0.5, "cont": 0.35}, {"name": "JohnnyJ", "acc": 0.25, "cont": 0.35}, {"name": "Gwyn Thomas", "acc": 0.5, "cont": 0.4}, {"name": "Matt", "acc": 0.5, "cont": 0.4}, {"name": "El Roxinho", "acc": 0.5, "cont": 0.35}]}, {"fixture": 5, "label": "QAT v SUI", "round": "Group Stage: Part 1", "players": [{"name": "Sam", "acc": 0.2, "cont": 0.44}, {"name": "Adrienne", "acc": 0.6, "cont": 0.44}, {"name": "JohnnyJ", "acc": 0.2, "cont": 0.36}, {"name": "Gwyn Thomas", "acc": 0.4, "cont": 0.4}, {"name": "Matt", "acc": 0.4, "cont": 0.4}, {"name": "El Roxinho", "acc": 0.6, "cont": 0.44}]}, {"fixture": 6, "label": "BRA v MAR", "round": "Group Stage: Part 1", "players": [{"name": "Sam", "acc": 0.1667, "cont": 0.4333}, {"name": "Adrienne", "acc": 0.5, "cont": 0.4333}, {"name": "JohnnyJ", "acc": 0.1667, "cont": 0.3667}, {"name": "Gwyn Thomas", "acc": 0.3333, "cont": 0.4}, {"name": "Matt", "acc": 0.3333, "cont": 0.4667}, {"name": "El Roxinho", "acc": 0.5, "cont": 0.5}]}, {"fixture": 7, "label": "HAI v SCO", "round": "Group Stage: Part 1", "players": [{"name": "Sam", "acc": 0.2857, "cont": 0.4}, {"name": "Adrienne", "acc": 0.5714, "cont": 0.4}, {"name": "JohnnyJ", "acc": 0.2857, "cont": 0.3429}, {"name": "Gwyn Thomas", "acc": 0.4286, "cont": 0.3714}, {"name": "Matt", "acc": 0.4286, "cont": 0.4286}, {"name": "El Roxinho", "acc": 0.4286, "cont": 0.5714}]}, {"fixture": 8, "label": "AUS v TUR", "round": "Group Stage: Part 1", "players": [{"name": "Sam", "acc": 0.25, "cont": 0.425}, {"name": "Adrienne", "acc": 0.5, "cont": 0.45}, {"name": "JohnnyJ", "acc": 0.25, "cont": 0.375}, {"name": "Gwyn Thomas", "acc": 0.5, "cont": 0.45}, {"name": "Matt", "acc": 0.375, "cont": 0.475}, {"name": "El Roxinho", "acc": 0.375, "cont": 0.575}]}, {"fixture": 9, "label": "GER v CUW", "round": "Group Stage: Part 1", "players": [{"name": "Sam", "acc": 0.3333, "cont": 0.4}, {"name": "Adrienne", "acc": 0.5556, "cont": 0.4222}, {"name": "JohnnyJ", "acc": 0.3333, "cont": 0.3556}, {"name": "Gwyn Thomas", "acc": 0.4444, "cont": 0.5111}, {"name": "Matt", "acc": 0.4444, "cont": 0.4444}, {"name": "El Roxinho", "acc": 0.4444, "cont": 0.5333}]}, {"fixture": 10, "label": "NED v JPN", "round": "Group Stage: Part 1", "players": [{"name": "Sam", "acc": 0.3, "cont": 0.36}, {"name": "Adrienne", "acc": 0.5, "cont": 0.38}, {"name": "JohnnyJ", "acc": 0.3, "cont": 0.32}, {"name": "Gwyn Thomas", "acc": 0.4, "cont": 0.46}, {"name": "Matt", "acc": 0.4, "cont": 0.4}, {"name": "El Roxinho", "acc": 0.4, "cont": 0.48}]}, {"fixture": 11, "label": "CIV v ECU", "round": "Group Stage: Part 1", "players": [{"name": "Sam", "acc": 0.3636, "cont": 0.4}, {"name": "Adrienne", "acc": 0.5455, "cont": 0.4182}, {"name": "JohnnyJ", "acc": 0.2727, "cont": 0.3455}, {"name": "Gwyn Thomas", "acc": 0.3636, "cont": 0.4727}, {"name": "Matt", "acc": 0.3636, "cont": 0.4545}, {"name": "El Roxinho", "acc": 0.3636, "cont": 0.4909}]}, {"fixture": 12, "label": "SWE v TUN", "round": "Group Stage: Part 1", "players": [{"name": "Sam", "acc": 0.3333, "cont": 0.4167}, {"name": "Adrienne", "acc": 0.5, "cont": 0.4333}, {"name": "JohnnyJ", "acc": 0.3333, "cont": 0.3833}, {"name": "Gwyn Thomas", "acc": 0.3333, "cont": 0.5167}, {"name": "Matt", "acc": 0.4167, "cont": 0.4833}, {"name": "El Roxinho", "acc": 0.3333, "cont": 0.5}]}, {"fixture": 13, "label": "ESP v CPV", "round": "Group Stage: Part 1", "players": [{"name": "Sam", "acc": 0.3077, "cont": 0.3846}, {"name": "Adrienne", "acc": 0.4615, "cont": 0.4}, {"name": "JohnnyJ", "acc": 0.3077, "cont": 0.3538}, {"name": "Gwyn Thomas", "acc": 0.3077, "cont": 0.4769}, {"name": "Matt", "acc": 0.3846, "cont": 0.4462}, {"name": "El Roxinho", "acc": 0.3077, "cont": 0.4615}]}, {"fixture": 14, "label": "BEL v EGY", "round": "Group Stage: Part 1", "players": [{"name": "Sam", "acc": 0.3571, "cont": 0.4}, {"name": "Adrienne", "acc": 0.5, "cont": 0.4143}, {"name": "JohnnyJ", "acc": 0.2857, "cont": 0.3714}, {"name": "Gwyn Thomas", "acc": 0.2857, "cont": 0.4857}, {"name": "Matt", "acc": 0.3571, "cont": 0.4571}, {"name": "El Roxinho", "acc": 0.3571, "cont": 0.4714}]}, {"fixture": 15, "label": "KSA v URU", "round": "Group Stage: Part 1", "players": [{"name": "Sam", "acc": 0.3333, "cont": 0.3867}, {"name": "Adrienne", "acc": 0.4667, "cont": 0.4}, {"name": "JohnnyJ", "acc": 0.2667, "cont": 0.36}, {"name": "Gwyn Thomas", "acc": 0.2667, "cont": 0.52}, {"name": "Matt", "acc": 0.3333, "cont": 0.44}, {"name": "El Roxinho", "acc": 0.3333, "cont": 0.4533}]}, {"fixture": 16, "label": "IRN v NZL", "round": "Group Stage: Part 1", "players": [{"name": "Sam", "acc": 0.3125, "cont": 0.4125}, {"name": "Adrienne", "acc": 0.4375, "cont": 0.4125}, {"name": "JohnnyJ", "acc": 0.3125, "cont": 0.4}, {"name": "Gwyn Thomas", "acc": 0.25, "cont": 0.5375}, {"name": "Matt", "acc": 0.3125, "cont": 0.45}, {"name": "El Roxinho", "acc": 0.3125, "cont": 0.4625}]}, {"fixture": 17, "label": "FRA v SEN", "round": "Group Stage: Part 1", "players": [{"name": "Sam", "acc": 0.3529, "cont": 0.3882}, {"name": "Adrienne", "acc": 0.4706, "cont": 0.3882}, {"name": "JohnnyJ", "acc": 0.3529, "cont": 0.3765}, {"name": "Gwyn Thomas", "acc": 0.2941, "cont": 0.5059}, {"name": "Matt", "acc": 0.3529, "cont": 0.4235}, {"name": "El Roxinho", "acc": 0.3529, "cont": 0.4353}]}, {"fixture": 18, "label": "IRQ v NOR", "round": "Group Stage: Part 1", "players": [{"name": "Sam", "acc": 0.3889, "cont": 0.3667}, {"name": "Adrienne", "acc": 0.5, "cont": 0.3667}, {"name": "JohnnyJ", "acc": 0.3889, "cont": 0.3556}, {"name": "Gwyn Thomas", "acc": 0.3333, "cont": 0.4778}, {"name": "Matt", "acc": 0.3889, "cont": 0.4}, {"name": "El Roxinho", "acc": 0.3889, "cont": 0.4111}]}, {"fixture": 19, "label": "ARG v ALG", "round": "Group Stage: Part 1", "players": [{"name": "Sam", "acc": 0.4211, "cont": 0.3579}, {"name": "Adrienne", "acc": 0.5263, "cont": 0.3579}, {"name": "JohnnyJ", "acc": 0.4211, "cont": 0.3474}, {"name": "Gwyn Thomas", "acc": 0.3684, "cont": 0.4632}, {"name": "Matt", "acc": 0.4211, "cont": 0.3895}, {"name": "El Roxinho", "acc": 0.3684, "cont": 0.4421}]}, {"fixture": 20, "label": "AUT v JOR", "round": "Group Stage: Part 1", "players": [{"name": "Sam", "acc": 0.45, "cont": 0.34}, {"name": "Adrienne", "acc": 0.55, "cont": 0.34}, {"name": "JohnnyJ", "acc": 0.45, "cont": 0.33}, {"name": "Gwyn Thomas", "acc": 0.4, "cont": 0.44}, {"name": "Matt", "acc": 0.45, "cont": 0.37}, {"name": "El Roxinho", "acc": 0.4, "cont": 0.42}]}, {"fixture": 21, "label": "POR v COD", "round": "Group Stage: Part 1", "players": [{"name": "Sam", "acc": 0.4286, "cont": 0.3333}, {"name": "Adrienne", "acc": 0.5238, "cont": 0.3333}, {"name": "JohnnyJ", "acc": 0.4286, "cont": 0.3238}, {"name": "Gwyn Thomas", "acc": 0.381, "cont": 0.4286}, {"name": "Matt", "acc": 0.4286, "cont": 0.3619}, {"name": "El Roxinho", "acc": 0.4286, "cont": 0.4476}]}];
   const PALETTE   = ["#E63946", "#457B9D", "#2A9D8F", "#a78bfa", "#F4A261", "#60a5fa"];
   const QUADRANTS = [{"x": 0.25, "y": 0.75, "label": "Successful Sheep", "color": "#4caf78"}, {"x": 0.75, "y": 0.75, "label": "Insufferable Know-It-All", "color": "#ffd166"}, {"x": 0.25, "y": 0.25, "label": "Misguided Lemming", "color": "#e07070"}, {"x": 0.75, "y": 0.25, "label": "Discount Nostradamus", "color": "#9b72cf"}];
   const PLAYERS   = STEPS[0].players.map(d => d.name);
@@ -819,6 +881,21 @@
     .attr("text-anchor","middle").attr("fill","#cccccc").attr("font-size",12)
     .text("Accuracy (proportion of outcomes predicted correctly)");
 
+  // ── Tooltip ───────────────────────────────────────────────────────────────────
+  const scTip = d3.select("body").append("div")
+    .style("position","fixed")
+    .style("background","rgba(10,20,35,0.95)")
+    .style("border","1px solid #2a4060")
+    .style("border-radius","8px")
+    .style("padding","9px 13px")
+    .style("font-size","12px")
+    .style("color","#e8eef5")
+    .style("pointer-events","none")
+    .style("opacity", 0)
+    .style("transition","opacity .15s")
+    .style("line-height","1.6")
+    .style("box-shadow","0 4px 20px rgba(0,0,0,0.5)");
+
   // ── Per-player elements (lines + dots + labels) ────────────────────────────
   // Leader lines from dot to right-side label
   const lineEls = {};
@@ -830,7 +907,37 @@
       .attr("stroke", color(p)).attr("stroke-width", 0.9).attr("opacity", 0.5);
     dotEls[p]  = g.append("circle")
       .attr("r", 8).attr("fill", color(p))
-      .attr("stroke","white").attr("stroke-width", 1);
+      .attr("stroke","white").attr("stroke-width", 1)
+      .style("cursor","crosshair")
+      .style("transition","r .15s")
+      .on("mouseover", function(event) {
+        const step = STEPS[+document.getElementById("sc-slider").value];
+        const d    = step.players.find(d => d.name === p);
+        d3.select(this)
+          .raise()
+          .attr("r", 13)
+          .attr("stroke-width", 2.5)
+          .style("filter", `drop-shadow(0 0 8px ${color(p)})`);
+        scTip
+          .style("opacity", 1)
+          .style("left", (event.clientX + 14) + "px")
+          .style("top",  (event.clientY - 42) + "px")
+          .html(`<b style="color:${color(p)};font-size:13px">${p}</b><br>
+                 Accuracy: <b>${(d.acc * 100).toFixed(1)}%</b><br>
+                 Contrarianism: <b>${(d.cont * 100).toFixed(1)}%</b>`);
+      })
+      .on("mousemove", function(event) {
+        scTip
+          .style("left", (event.clientX + 14) + "px")
+          .style("top",  (event.clientY - 42) + "px");
+      })
+      .on("mouseout", function() {
+        d3.select(this)
+          .attr("r", 8)
+          .attr("stroke-width", 1)
+          .style("filter", "none");
+        scTip.style("opacity", 0);
+      });
     lblEls[p]  = g.append("text")
       .attr("x", PW + 10).attr("fill", color(p))
       .attr("font-size", 12).attr("font-weight","bold")
