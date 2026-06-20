@@ -330,7 +330,7 @@
 <header>
   <h1><span class="emoji">⚽</span>World Cup 2026 Prediction Contest</h1>
   <p style="color:var(--muted);font-size:0.75rem;margin-top:5px;letter-spacing:0.03em;">
-    Last updated 20 June 2026, 08:52 CEST
+    Last updated 20 June 2026, 15:08 CEST
   </p>
 </header>
 
@@ -1248,7 +1248,8 @@
     .attr("x1", d => d[0].cx).attr("y1", d => d[0].cy)
     .attr("x2", d => d[1].cx).attr("y2", d => d[1].cy)
     .attr("stroke-width", (d, i) => Math.max(0.5, 2.5 * (1 - i / hist.length)))
-    .attr("opacity",      (d, i) => 0.35 * (1 - i / hist.length));
+    .attr("opacity", (d, i) =>
+      SELECTED.has(p) ? 0.55 * (1 - i / hist.length) : 0.03);
 
     // Remove stale segments if history shrunk
     trailEls[p].attr("d", "");   // keep the placeholder path
@@ -1365,14 +1366,12 @@
   document.addEventListener('ps', e => {
     const sel = e.detail;
     PLAYERS.forEach(p => {
-      const on  = sel.has(p);
-      const cls = 'trail-seg-' + p.split(' ').join('_');
+      const on = sel.has(p);
       dotEls[p].attr("opacity",  on ? 1    : 0.06);
       lineEls[p].attr("opacity", on ? 0.5  : 0.06);
       lblEls[p].attr("opacity",  on ? 1    : 0.06);
       dotEls[p].style("pointer-events", on ? "all" : "none");
-      // Dim trail segments too
-      d3.selectAll('.' + cls).attr("opacity", on ? null : 0.03);
+      drawTrail(p);   // redraws with correct opacity based on updated SELECTED
     });
   });
 })();
@@ -1395,7 +1394,7 @@
       <span style="color:#ffd166;font-size:0.8rem;margin-right:12px">Answer: 1</span>
     </div>
   </div>
-  <div class="bq-summary" id="bq-1-summary" style="display:block">🥇 Gwyn Thomas  ·  🥈 JohnnyJ, El Roxinho</div>
+  <div class="bq-summary" id="bq-1-summary" style="display:block">🥇 <span class="bq-ps-name" data-ps-player="Gwyn Thomas" data-ps-color="#a78bfa" style="color:#8b949e">Gwyn Thomas</span>  ·  🥈 <span class="bq-ps-name" data-ps-player="JohnnyJ" data-ps-color="#2A9D8F" style="color:#8b949e">JohnnyJ</span>, <span class="bq-ps-name" data-ps-player="El Roxinho" data-ps-color="#60a5fa" style="color:#8b949e">El Roxinho</span></div>
   <div class="bq-body" id="bq-1-body" style="display:none">
     
 <div id="bq-wrap-1" style="width:100%;max-width:860px;margin:0 auto;"></div>
@@ -1740,39 +1739,48 @@
     .style("transition","opacity .15s").style("line-height","1.6")
     .style("box-shadow","0 4px 20px rgba(0,0,0,0.5)");
 
-  DATA.forEach(d => {
-    const bx = x(d.player), bw = x.bandwidth();
-    const total = d.first + d.second;
+  const GOLD   = "#ffd166";
+  const SILVER = "#a0aab8";
 
-    // 1st place bar
+  DATA.forEach(d => {
+    const bx    = x(d.player), bw = x.bandwidth();
+    const total = d.first + d.second;
+    const grp   = g.append("g")
+      .attr("class", "bs-player-grp")
+      .attr("data-player", d.player)
+      .attr("opacity", 0.22);   // default dimmed; ps listener brightens selected
+
+    // 1st place bar — gold
     if (d.first > 0) {
-      g.append("rect")
+      grp.append("rect")
+        .attr("class","bs-first")
         .attr("x", bx).attr("width", bw)
         .attr("y", y(d.first)).attr("height", PH - y(d.first))
-        .attr("fill", d.color).attr("opacity", 0.9).attr("rx", 3);
-      g.append("text")
+        .attr("fill", GOLD).attr("rx", 3);
+      grp.append("text")
         .attr("x", bx + bw/2).attr("y", y(d.first/2))
         .attr("text-anchor","middle").attr("dominant-baseline","middle")
-        .attr("fill","white").attr("font-size",11).attr("font-weight","700")
+        .attr("fill","#0d1b2a").attr("font-size",11).attr("font-weight","700")
         .text(d.first);
     }
 
-    // 2nd place bar (stacked, hatched via repeating diagonal lines)
+    // 2nd place bar — silver
     if (d.second > 0) {
       const y2 = y(total), h2 = y(d.first) - y(total);
-      g.append("rect")
+      grp.append("rect")
+        .attr("class","bs-second")
         .attr("x", bx).attr("width", bw)
         .attr("y", y2).attr("height", h2)
-        .attr("fill", d.color).attr("opacity", 0.4).attr("rx", 3);
-      g.append("text")
+        .attr("fill", SILVER).attr("rx", 3);
+      grp.append("text")
         .attr("x", bx + bw/2).attr("y", y2 + h2/2)
         .attr("text-anchor","middle").attr("dominant-baseline","middle")
-        .attr("fill","white").attr("font-size",10).attr("font-weight","700")
+        .attr("fill","#0d1b2a").attr("font-size",10).attr("font-weight","700")
         .text(d.second);
     }
 
     // Hover hit area
-    g.append("rect")
+    grp.append("rect")
       .attr("x", bx).attr("width", bw)
       .attr("y", 0).attr("height", PH)
       .attr("fill","transparent").style("cursor","crosshair")
@@ -1791,13 +1799,36 @@
       .on("mouseout", () => tip.style("opacity",0));
   });
 
+  // ── ps listener — highlight selected players in their colour ──────────────
+  function applyPS(sel) {
+    g.selectAll(".bs-player-grp").each(function() {
+      const grpEl = d3.select(this);
+      const p     = this.getAttribute("data-player");
+      const on    = sel.has(p);
+      const pData = DATA.find(d => d.player === p);
+      grpEl.attr("opacity", on ? 1 : 0.18);
+      grpEl.selectAll("rect:not([fill='transparent'])")
+        .attr("stroke",       on ? pData.color : "none")
+        .attr("stroke-width", on ? 2           : 0);
+    });
+    // Colour the x-axis player name labels
+    xAxisG.selectAll("text").each(function() {
+      const p  = d3.select(this).text();
+      const pd = DATA.find(d => d.player === p);
+      d3.select(this).attr("fill", sel.has(p) ? (pd ? pd.color : "#b0b8c4") : "#444c58");
+    });
+  }
+  // Initialise with full SELECTED set so all bars light up by default
+  applyPS(new Set(DATA.map(d => d.player)));
+  document.addEventListener('ps', e => applyPS(e.detail));
+
   // Legend
-  const legData = [{"label":"1st place (5 pts)","opacity":0.9},{"label":"2nd place (2 pts)","opacity":0.4}];
+  const legData = [{"label":"1st place (5 pts)","fill":GOLD},{"label":"2nd place (2 pts)","fill":SILVER}];
   legData.forEach((l, i) => {
     const lx = PW - 200 + i * 100;
     g.append("rect").attr("x", lx).attr("y", -8)
       .attr("width", 14).attr("height", 10)
-      .attr("fill","#aaa").attr("opacity", l.opacity).attr("rx",2);
+      .attr("fill", l.fill).attr("rx",2);
     g.append("text").attr("x", lx + 18).attr("y", -1)
       .attr("fill","#8b949e").attr("font-size",10)
       .attr("dominant-baseline","middle").text(l.label);
@@ -1808,7 +1839,42 @@
 
 </div>
 <div id="jokers"  class="panel">
-  <p style="color:#8b949e;padding:40px;text-align:center">No jokers yet — check back soon!</p>
+  
+<div class="bq-card" id="jk-2">
+  <div class="bq-header" onclick="toggleBQ('jk-2')">
+    <div class="bq-header-left">
+      <span class="bq-chevron" id="jk-2-chev">▾</span>
+      <div>
+        <div class="bq-round">Group Stage - Part 2</div>
+        <div class="bq-question">🃏 Round 2 Joker</div>
+      </div>
+    </div>
+    <div class="bq-header-right"><span style='color:#8b949e;font-size:0.8rem'>Pending</span></div>
+  </div>
+  <div class="bq-summary" id="jk-2-summary"
+       style="display:none">Affected: <span style="color:#E63946">Sam</span> · <span style="color:#F4A261">Matt</span> · <span style="color:#60a5fa">El Roxinho</span></div>
+  <div class="bq-body" id="jk-2-body"
+       style="display:block">
+    <div class="jk-desc-box"><em style='color:#8b949e'>🤫 To be revealed…</em></div>
+    <div class="jk-players">
+<div class="jk-player-row">
+  <span class="jk-player-name" style="color:#E63946">Sam</span>
+  <span class="jk-arrow">→</span>
+  <span class="jk-decision"><em style='color:#f4a261'>😈 Be afraid…</em></span>
+</div>
+<div class="jk-player-row">
+  <span class="jk-player-name" style="color:#F4A261">Matt</span>
+  <span class="jk-arrow">→</span>
+  <span class="jk-decision"><em style='color:#f4a261'>😈 Be afraid…</em></span>
+</div>
+<div class="jk-player-row">
+  <span class="jk-player-name" style="color:#60a5fa">El Roxinho</span>
+  <span class="jk-arrow">→</span>
+  <span class="jk-decision"><em style='color:#f4a261'>😈 Be afraid…</em></span>
+</div></div>
+  </div>
+</div>
+
 </div>
 
 <script>
@@ -1886,16 +1952,18 @@ function psAll() {
 // Bonus question lollipops — dim/show SVG elements by player name class
 document.addEventListener('ps', e => {
   const sel = e.detail;
-  sel.forEach(p => {
-    const cls = 'bq-dot-' + p.split(' ').join('_');
-    document.querySelectorAll('.' + cls).forEach(el => { el.style.opacity = ''; });
-  });
-  // Dim dots not in selection
   document.querySelectorAll('.bq-dot').forEach(el => {
-    const cls = [...el.classList].find(c => c.startsWith('bq-dot-'));
+    const cls  = [...el.classList].find(c => c.startsWith('bq-dot-'));
     if (!cls) return;
     const name = cls.slice('bq-dot-'.length).split('_').join(' ');
     el.style.opacity = sel.has(name) ? '' : '0.1';
+  });
+  // Highlight player names in collapsed bonus summaries
+  document.querySelectorAll('.bq-ps-name').forEach(el => {
+    const p     = el.getAttribute('data-ps-player');
+    const color = el.getAttribute('data-ps-color');
+    el.style.color = sel.has(p) ? (color || '#e8eef5') : '#8b949e';
+    el.style.fontWeight = sel.has(p) ? '700' : '400';
   });
 });
 </script>
