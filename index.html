@@ -17,10 +17,6 @@
     --muted:     #7a8fa6;
     --accent:    #ffd166;
     --accent2:   #ffb700;
-    --green:     #1a7a4a;
-    --red:       #8b2020;
-    --blue:      #1e3a5f;
-    --glow:      rgba(255,209,102,0.12);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -37,7 +33,7 @@
   header {
     background: linear-gradient(135deg, #0a1628 0%, #0f2040 50%, #0a1628 100%);
     border-bottom: 1px solid var(--border2);
-    padding: 22px 32px;
+    padding: 13px 20px;
     position: relative;
     overflow: hidden;
   }
@@ -48,10 +44,10 @@
     pointer-events: none;
   }
   header h1 {
-    font-size: 1.55rem; font-weight: 800; color: var(--accent);
+    font-size: 1.25rem; font-weight: 800; color: var(--accent);
     letter-spacing: 0.02em; text-shadow: 0 0 40px rgba(255,209,102,0.3);
   }
-  header h1 .emoji { margin-right: 10px; font-size: 1.4rem; }
+  header h1 .emoji { margin-right: 10px; font-size: 1.15rem; }
   header p {
     color: var(--muted); font-size: 0.75rem; margin-top: 4px;
     letter-spacing: 0.03em;
@@ -113,29 +109,11 @@
     padding: 14px 12px 0;
   }
 
-  .section-title {
-    font-size: 1.05rem; font-weight: 700;
-    color: var(--accent);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    margin-bottom: 18px;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .section-title::before {
-    content: '';
-    display: inline-block; width: 3px; height: 1em;
-    background: var(--accent); border-radius: 2px;
-  }
-
   img.chart-img {
     max-width: 100%; border-radius: 8px; display: block; margin: 0 auto;
   }
 
   /* ── Controls (play/slider) ── */
-  .control-hint {
-    text-align: center; color: var(--muted); font-size: 0.75rem;
-    margin-top: 4px; letter-spacing: 0.02em;
-  }
   button.play-btn {
     background: linear-gradient(135deg, #1e3a5f, #2a5080);
     color: white; border: 1px solid var(--border2);
@@ -217,11 +195,38 @@
   .heatmap .fix-hdr {
     padding: 2px 2px 4px; text-align: center;
     width: 58px; min-width: 58px; vertical-align: bottom;
+    cursor: pointer;
   }
-  .rnd-badge-spacer { height: 1em; margin-bottom: 2px; }
-  .round-title-row td { padding: 0; }
+  .fix-hdr:hover .fix-label { color: var(--accent); }
+  /* ── Fixture header tooltip ── */
+  #fix-tooltip {
+    position: fixed; pointer-events: none; z-index: 1000;
+    background: rgba(10,20,35,0.97);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 11px 15px;
+    font-size: 12px; color: var(--text);
+    line-height: 1.7;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.55);
+    opacity: 0; transition: opacity .15s;
+    min-width: 170px;
+  }
+  #fix-tooltip .ft-teams {
+    font-size: 0.95rem; font-weight: 700; color: var(--accent);
+    margin-bottom: 5px;
+  }
+  #fix-tooltip .ft-result {
+    font-size: 0.82rem; color: var(--muted); margin-top: 4px;
+  }
+  #fix-tooltip .ft-result span {
+    font-weight: 700;
+  }
+  #fix-tooltip .ft-win  { color: #4caf78; }
+  #fix-tooltip .ft-lose { color: #e07070; }
+  #fix-tooltip .ft-draw { color: #8b949e; }
+  .round-title-row th { padding: 0; }
   .round-title-cell {
-    padding: 8px 4px 3px;
+    padding: 6px 4px 2px 8px;
     font-size: 0.72rem; font-weight: 800;
     color: var(--accent); text-transform: uppercase;
     letter-spacing: 0.08em; white-space: nowrap;
@@ -231,12 +236,25 @@
     font-size: 0.7rem; color: var(--muted);
     display: flex; flex-direction: column; align-items: center; line-height: 1.35;
   }
+  /* Round-start divider — sits inside the existing 3px border-spacing, costs no extra width */
+  .heatmap .rnd-start {
+    border-left: 2px solid var(--border2);
+  }
+  .heatmap thead .rnd-start {
+    border-left-color: var(--accent);
+    border-left-width: 2px;
+  }
+  .heatmap thead .round-title-cell {
+    border-left: none;
+  }
   .fix-v { color: #3a5070; font-size: 0.62rem; }
   .heatmap td { padding: 2px; }
   .heatmap td:has(.cell[data-diff="1"]) { position: relative; z-index: 1; }
   /* Differentiator mode — toggled via class on container, no JS per-cell loops */
+  .cell[data-pending]             { opacity: 0.45; }
   .diff-mode .cell                 { opacity: 0.25; outline: none; }
   .diff-mode .cell[data-diff="1"] { opacity: 1; outline: 2px solid #ffd166; outline-offset: -2px; }
+  .diff-mode .cell[data-pending]  { opacity: 0.15; }
   .cell {
     border-radius: 6px; width: 54px; height: 32px;
     display: flex; align-items: center; justify-content: center;
@@ -248,52 +266,60 @@
     .cell:hover { transform: scale(1.08); }
   }
 
-  /* ── Global player selector ── */
-  .ps-bar {
-    background: var(--surface);
+  /* ── Global player selector — floating action button + popover ── */
+  .ps-fab {
+    position: fixed; bottom: 20px; right: 20px; z-index: 900;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 20px;
+    padding: 6px 14px;
+    cursor: pointer;
+    font-size: 0.78rem; font-weight: 600;
+    color: var(--muted);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+    transition: color .15s, border-color .15s, box-shadow .15s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .ps-fab:hover {
+    color: var(--accent); border-color: var(--accent);
+    box-shadow: 0 4px 20px rgba(255,209,102,0.2);
+  }
+  .ps-fab.active {
+    color: var(--accent); border-color: var(--accent);
+  }
+  .ps-fab-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--accent); flex-shrink: 0;
+    opacity: 0;  /* shown only when selection is partial */
+    transition: opacity .2s;
+  }
+  .ps-fab.partial .ps-fab-dot { opacity: 1; }
+  .ps-popover {
+    position: fixed; bottom: 56px; right: 20px; z-index: 901;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 12px;
+    padding: 12px 14px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    display: none;
+    flex-direction: column; gap: 10px;
+    min-width: 160px;
+  }
+  .ps-popover.open { display: flex; }
+  .ps-popover-label {
+    font-size: 0.68rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.07em;
+    padding-bottom: 6px;
     border-bottom: 1px solid var(--border);
-    padding: 7px 16px;
-    display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
-    transition: padding .2s;
   }
-  .ps-bar.collapsed {
-    padding: 4px 16px;
-    flex-wrap: nowrap;
-    overflow: hidden;
-    height: 28px;
-  }
-  .ps-bar.collapsed .ps-btn,
-  .ps-bar.collapsed .ps-all,
-  .ps-bar.collapsed .ps-label {
-    display: none;
-  }
-  .ps-bar.collapsed .ps-collapsed-hint {
-    display: inline;
-  }
-  .ps-collapsed-hint {
-    display: none;
-    font-size: 0.72rem; color: var(--muted);
-    letter-spacing: 0.04em;
-  }
-  .ps-toggle {
-    margin-left: auto; flex-shrink: 0;
-    background: none; border: none; cursor: pointer;
-    color: var(--muted); font-size: 0.7rem;
-    padding: 2px 4px; border-radius: 4px;
-    transition: color .15s;
-    letter-spacing: 0.02em;
-  }
-  .ps-toggle:hover { color: var(--accent); }
-  .ps-label {
-    font-size: 0.72rem; color: var(--muted);
-    text-transform: uppercase; letter-spacing: 0.06em;
-    margin-right: 4px; flex-shrink: 0;
+  .ps-popover-btns {
+    display: flex; flex-direction: column; gap: 6px;
   }
   .ps-btn {
-    border-radius: 20px; padding: 4px 13px;
-    font-size: 0.8rem; font-weight: 600;
+    border-radius: 20px; padding: 5px 14px;
+    font-size: 0.82rem; font-weight: 600;
     border: 2px solid; cursor: pointer;
-    background: transparent;
+    background: transparent; text-align: left;
     opacity: 0.38; transition: opacity .15s, box-shadow .15s;
   }
   .ps-btn.on {
@@ -301,21 +327,19 @@
     box-shadow: 0 0 6px currentColor;
   }
   .ps-all {
-    border-radius: 20px; padding: 4px 13px;
-    font-size: 0.8rem; font-weight: 600;
+    border-radius: 20px; padding: 5px 14px;
+    font-size: 0.82rem; font-weight: 600;
     border: 1px solid var(--border); cursor: pointer;
-    background: var(--surface2); color: var(--muted);
-    transition: all .15s;
+    background: var(--surface); color: var(--muted);
+    transition: all .15s; text-align: left;
   }
   .ps-all.on { border-color: var(--accent); color: var(--accent); }
 
   @media (max-width: 600px) {
     .panel { padding: 8px 6px; }
     .chart-card { padding: 10px 8px; }
-    .ps-bar { padding: 5px 10px; }
-    .ps-btn { padding: 3px 9px; font-size: 0.76rem; }
-    .ps-all { padding: 3px 9px; font-size: 0.76rem; }
-    .ps-toggle { font-size: 0.65rem; }
+    .ps-fab { bottom: 14px; right: 14px; padding: 5px 11px; font-size: 0.74rem; }
+    .ps-popover { bottom: 48px; right: 14px; }
   }
 
   /* ── Bonus / Joker cards ── */
@@ -391,15 +415,15 @@
 <header>
   <h1><span class="emoji">⚽</span>World Cup 2026 Prediction Contest</h1>
   <p style="color:var(--muted);font-size:0.75rem;margin-top:5px;letter-spacing:0.03em;">
-    Last updated 24 June 2026, 06:17 CEST
+    Last updated 24 June 2026, 20:27 CEST
   </p>
-  <div class="round-progress done">Group Stage - Part 2 — Complete ✓</div>
+  <div class="round-progress"><span class="rp-label">Group Stage - Part 3</span><span class="rp-bar-wrap"><span class="rp-bar" style="width:0%"></span></span><span class="rp-frac">0/24</span></div>
 </header>
 
 
 <div class="ticker-wrap">
-  <div class="ticker-track" style="animation-duration:64s">
-    <span class="ticker-item">STANDINGS:  🥇 Sam (29 pts)  ·  🥈 Adrienne (24 pts)  ·  🥉 Matt (22 pts)</span><span class="ticker-sep">◆</span><span class="ticker-item">😬 Gwyn Thomas's draw prediction for <span class="fi fi-co" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>COL v <span class="fi fi-cd" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>COD backfired!</span><span class="ticker-sep">◆</span><span class="ticker-item">😱 Nobody saw <span class="fi fi-gb-eng" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>ENG drawing with <span class="fi fi-gh" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>GHA — nil pois!</span><span class="ticker-sep">◆</span><span class="ticker-item">⭐ Bonus question tie: Sam & Gwyn Thomas on 5 pts</span><span class="ticker-sep">◆</span><span class="ticker-item">🏆 Gwyn Thomas topped the table after Group Stage - Part 1!</span><span class="ticker-sep">◆</span><span class="ticker-item">🤔 Is Gwyn Thomas even trying?</span><span class="ticker-sep">◆</span><span class="ticker-item">🚨 Sam is running away with it — something needs to be done!</span><span class="ticker-sep">◆</span><span class="ticker-item">🤔 Is El Roxinho even trying?</span><span class="ticker-sep">◆</span><span class="ticker-item">STANDINGS:  🥇 Sam (29 pts)  ·  🥈 Adrienne (24 pts)  ·  🥉 Matt (22 pts)</span><span class="ticker-sep">◆</span><span class="ticker-item">😬 Gwyn Thomas's draw prediction for <span class="fi fi-co" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>COL v <span class="fi fi-cd" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>COD backfired!</span><span class="ticker-sep">◆</span><span class="ticker-item">😱 Nobody saw <span class="fi fi-gb-eng" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>ENG drawing with <span class="fi fi-gh" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>GHA — nil pois!</span><span class="ticker-sep">◆</span><span class="ticker-item">⭐ Bonus question tie: Sam & Gwyn Thomas on 5 pts</span><span class="ticker-sep">◆</span><span class="ticker-item">🏆 Gwyn Thomas topped the table after Group Stage - Part 1!</span><span class="ticker-sep">◆</span><span class="ticker-item">🤔 Is Gwyn Thomas even trying?</span><span class="ticker-sep">◆</span><span class="ticker-item">🚨 Sam is running away with it — something needs to be done!</span><span class="ticker-sep">◆</span><span class="ticker-item">🤔 Is El Roxinho even trying?</span><span class="ticker-sep">◆</span><span class="ticker-item">STANDINGS:  🥇 Sam (29 pts)  ·  🥈 Adrienne (24 pts)  ·  🥉 Matt (22 pts)</span><span class="ticker-sep">◆</span><span class="ticker-item">😬 Gwyn Thomas's draw prediction for <span class="fi fi-co" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>COL v <span class="fi fi-cd" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>COD backfired!</span><span class="ticker-sep">◆</span><span class="ticker-item">😱 Nobody saw <span class="fi fi-gb-eng" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>ENG drawing with <span class="fi fi-gh" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>GHA — nil pois!</span><span class="ticker-sep">◆</span><span class="ticker-item">⭐ Bonus question tie: Sam & Gwyn Thomas on 5 pts</span><span class="ticker-sep">◆</span><span class="ticker-item">🏆 Gwyn Thomas topped the table after Group Stage - Part 1!</span><span class="ticker-sep">◆</span><span class="ticker-item">🤔 Is Gwyn Thomas even trying?</span><span class="ticker-sep">◆</span><span class="ticker-item">🚨 Sam is running away with it — something needs to be done!</span><span class="ticker-sep">◆</span><span class="ticker-item">🤔 Is El Roxinho even trying?</span><span class="ticker-sep">◆</span>
+  <div class="ticker-track" style="animation-duration:118s">
+    <span class="ticker-item">STANDINGS:  🥇 Sam (29 pts)  ·  🥈 Gwyn Thomas (25 pts)  ·  🥉 Adrienne (24 pts)</span><span class="ticker-sep">◆</span><span class="ticker-item">😬 Gwyn Thomas's draw prediction for <span class="fi fi-co" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>COL v <span class="fi fi-cd" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>COD backfired!</span><span class="ticker-sep">◆</span><span class="ticker-item">😱 Nobody saw <span class="fi fi-gb-eng" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>ENG drawing with <span class="fi fi-gh" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>GHA — nil pois!</span><span class="ticker-sep">◆</span><span class="ticker-item">⭐ Bonus question tie: Sam & Gwyn Thomas on 5 pts</span><span class="ticker-sep">◆</span><span class="ticker-item">🏆 Gwyn Thomas topped the table after Group Stage - Part 1!</span><span class="ticker-sep">◆</span><span class="ticker-item">🤔 Is Matt even trying?</span><span class="ticker-sep">◆</span><span class="ticker-item">🚨 Sam is running away with it — something needs to be done!</span><span class="ticker-sep">◆</span><span class="ticker-item">🏆 Sam topped the table after Group Stage - Part 2!</span><span class="ticker-sep">◆</span><span class="ticker-item">🤔 Is El Roxinho even trying?</span><span class="ticker-sep">◆</span><span class="ticker-item">📅 Up next:  <span class="fi fi-ch" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>SUI v <span class="fi fi-ca" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>CAN  ·  <span class="fi fi-ba" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>BIH v <span class="fi fi-qa" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>QAT  ·  <span class="fi fi-ma" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>MAR v <span class="fi fi-ht" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>HAI</span><span class="ticker-sep">◆</span><span class="ticker-item">STANDINGS:  🥇 Sam (29 pts)  ·  🥈 Gwyn Thomas (25 pts)  ·  🥉 Adrienne (24 pts)</span><span class="ticker-sep">◆</span><span class="ticker-item">😬 Gwyn Thomas's draw prediction for <span class="fi fi-co" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>COL v <span class="fi fi-cd" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>COD backfired!</span><span class="ticker-sep">◆</span><span class="ticker-item">😱 Nobody saw <span class="fi fi-gb-eng" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>ENG drawing with <span class="fi fi-gh" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>GHA — nil pois!</span><span class="ticker-sep">◆</span><span class="ticker-item">⭐ Bonus question tie: Sam & Gwyn Thomas on 5 pts</span><span class="ticker-sep">◆</span><span class="ticker-item">🏆 Gwyn Thomas topped the table after Group Stage - Part 1!</span><span class="ticker-sep">◆</span><span class="ticker-item">🤔 Is Matt even trying?</span><span class="ticker-sep">◆</span><span class="ticker-item">🚨 Sam is running away with it — something needs to be done!</span><span class="ticker-sep">◆</span><span class="ticker-item">🏆 Sam topped the table after Group Stage - Part 2!</span><span class="ticker-sep">◆</span><span class="ticker-item">🤔 Is El Roxinho even trying?</span><span class="ticker-sep">◆</span><span class="ticker-item">📅 Up next:  <span class="fi fi-ch" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>SUI v <span class="fi fi-ca" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>CAN  ·  <span class="fi fi-ba" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>BIH v <span class="fi fi-qa" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>QAT  ·  <span class="fi fi-ma" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>MAR v <span class="fi fi-ht" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>HAI</span><span class="ticker-sep">◆</span><span class="ticker-item">STANDINGS:  🥇 Sam (29 pts)  ·  🥈 Gwyn Thomas (25 pts)  ·  🥉 Adrienne (24 pts)</span><span class="ticker-sep">◆</span><span class="ticker-item">😬 Gwyn Thomas's draw prediction for <span class="fi fi-co" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>COL v <span class="fi fi-cd" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>COD backfired!</span><span class="ticker-sep">◆</span><span class="ticker-item">😱 Nobody saw <span class="fi fi-gb-eng" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>ENG drawing with <span class="fi fi-gh" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>GHA — nil pois!</span><span class="ticker-sep">◆</span><span class="ticker-item">⭐ Bonus question tie: Sam & Gwyn Thomas on 5 pts</span><span class="ticker-sep">◆</span><span class="ticker-item">🏆 Gwyn Thomas topped the table after Group Stage - Part 1!</span><span class="ticker-sep">◆</span><span class="ticker-item">🤔 Is Matt even trying?</span><span class="ticker-sep">◆</span><span class="ticker-item">🚨 Sam is running away with it — something needs to be done!</span><span class="ticker-sep">◆</span><span class="ticker-item">🏆 Sam topped the table after Group Stage - Part 2!</span><span class="ticker-sep">◆</span><span class="ticker-item">🤔 Is El Roxinho even trying?</span><span class="ticker-sep">◆</span><span class="ticker-item">📅 Up next:  <span class="fi fi-ch" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>SUI v <span class="fi fi-ca" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>CAN  ·  <span class="fi fi-ba" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>BIH v <span class="fi fi-qa" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>QAT  ·  <span class="fi fi-ma" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>MAR v <span class="fi fi-ht" style="font-size:11px;vertical-align:middle;margin-right:2px;"></span>HAI</span><span class="ticker-sep">◆</span>
   </div>
 </div>
 
@@ -413,11 +437,8 @@
   <button class="tab"        onclick="showTab('rules',this)">📜 Rules</button>
 </nav>
 
-<div class="ps-bar" id="ps-bar"><span class="ps-label">Highlight</span><button class="ps-all on" id="ps-all" onclick="psAll()">All</button><button class="ps-btn on" data-p="Sam" style="color:#E63946;border-color:#E63946;" onclick="psToggle('Sam', this)">Sam</button><button class="ps-btn on" data-p="Adrienne" style="color:#457B9D;border-color:#457B9D;" onclick="psToggle('Adrienne', this)">Adrienne</button><button class="ps-btn on" data-p="JohnnyJ" style="color:#2A9D8F;border-color:#2A9D8F;" onclick="psToggle('JohnnyJ', this)">JohnnyJ</button><button class="ps-btn on" data-p="Gwyn Thomas" style="color:#a78bfa;border-color:#a78bfa;" onclick="psToggle('Gwyn Thomas', this)">Gwyn Thomas</button><button class="ps-btn on" data-p="Matt" style="color:#F4A261;border-color:#F4A261;" onclick="psToggle('Matt', this)">Matt</button><button class="ps-btn on" data-p="El Roxinho" style="color:#60a5fa;border-color:#60a5fa;" onclick="psToggle('El Roxinho', this)">El Roxinho</button><span class="ps-collapsed-hint">Highlight active</span><button class="ps-toggle" onclick="psBannerToggle()" title="Collapse">▲ hide</button></div>
-
-<div id="race"    class="panel active">
+<div class="ps-popover" id="ps-popover"><div class="ps-popover-label">Highlight players</div><div class="ps-popover-btns"><button class="ps-all on" id="ps-all" onclick="psAll()">All</button><button class="ps-btn on" data-p="Sam" style="color:#E63946;border-color:#E63946;" onclick="psToggle('Sam', this)">Sam</button><button class="ps-btn on" data-p="Adrienne" style="color:#457B9D;border-color:#457B9D;" onclick="psToggle('Adrienne', this)">Adrienne</button><button class="ps-btn on" data-p="JohnnyJ" style="color:#2A9D8F;border-color:#2A9D8F;" onclick="psToggle('JohnnyJ', this)">JohnnyJ</button><button class="ps-btn on" data-p="Gwyn Thomas" style="color:#a78bfa;border-color:#a78bfa;" onclick="psToggle('Gwyn Thomas', this)">Gwyn Thomas</button><button class="ps-btn on" data-p="Matt" style="color:#F4A261;border-color:#F4A261;" onclick="psToggle('Matt', this)">Matt</button><button class="ps-btn on" data-p="El Roxinho" style="color:#60a5fa;border-color:#60a5fa;" onclick="psToggle('El Roxinho', this)">El Roxinho</button></div></div><button class="ps-fab" id="ps-fab" onclick="psOpenToggle()"><span class="ps-fab-dot"></span><span id="ps-fab-label">Highlight players</span></button><div id="race"    class="panel active">
   <div class="chart-card">
-    <div class="section-title">The Race</div>
     
 <div id="race-container" style="max-width:960px;margin:0 auto;">
   <svg id="race-svg" width="100%" viewBox="0 0 960 480"
@@ -433,7 +454,6 @@
   <div style="text-align:center;margin-top:6px;">
     <span id="race-label" style="color:#ffd166;font-size:0.82rem;font-weight:700;"></span>
   </div>
-  <div class="control-hint">Drag to scrub · Play to animate</div>
 </div>
 
 <script>
@@ -696,71 +716,95 @@
 </div>
 <div id="grid"    class="panel">
 <div class="chart-card predictions-card">
-<div class="section-title" style="padding:0 0 8px;">Predictions</div>
 <div class="nav-controls">
-  
+  <button class="round-nav-btn" onclick="scrollToRound('latest')">▶ Latest</button>
   <button id="diff-btn" class="diff-toggle" onclick="toggleDiff()">✦ Differentiators</button>
   <div class="round-nav"><button onclick="scrollToRound('r1')">Group Stage - Part 1</button>
 <button onclick="scrollToRound('r2')">Group Stage - Part 2</button>
+<button onclick="scrollToRound('r3')">Group Stage - Part 3</button>
 </div>
 </div>
 <div class="heatmap-legend"><span class="leg-item"><span class="leg-dot" style="background:#1a7a4a"></span>Correct</span><span class="leg-item"><span class="leg-dot" style="background:#8b2020"></span>Wrong</span><span class="leg-item"><span class="leg-dot" style="background:#1e3a5f"></span>Pending</span></div>
 <div class="heatmap-scroll" id="heatmap-scroll">
 <table class="heatmap">
   <thead>
-    <tr><th class="corner"></th><th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="Mexico">MEX</span><span class="fix-v">v</span><span title="South Africa">RSA</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="South Korea">KOR</span><span class="fix-v">v</span><span title="Czech Republic">CZE</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="Canada">CAN</span><span class="fix-v">v</span><span title="Bosnia & Herz.">BIH</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="United States">USA</span><span class="fix-v">v</span><span title="Paraguay">PAR</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="Qatar">QAT</span><span class="fix-v">v</span><span title="Switzerland">SUI</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="Brazil">BRA</span><span class="fix-v">v</span><span title="Morocco">MAR</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="Haiti">HAI</span><span class="fix-v">v</span><span title="Scotland">SCO</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="Australia">AUS</span><span class="fix-v">v</span><span title="Turkey">TUR</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="Germany">GER</span><span class="fix-v">v</span><span title="Curaçao">CUW</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="Netherlands">NED</span><span class="fix-v">v</span><span title="Japan">JPN</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="Côte d'Ivoire">CIV</span><span class="fix-v">v</span><span title="Ecuador">ECU</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="Sweden">SWE</span><span class="fix-v">v</span><span title="Tunisia">TUN</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="Spain">ESP</span><span class="fix-v">v</span><span title="Cape Verde">CPV</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="Belgium">BEL</span><span class="fix-v">v</span><span title="Egypt">EGY</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="Saudi Arabia">KSA</span><span class="fix-v">v</span><span title="Uruguay">URU</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="Iran">IRN</span><span class="fix-v">v</span><span title="New Zealand">NZL</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="France">FRA</span><span class="fix-v">v</span><span title="Senegal">SEN</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="Iraq">IRQ</span><span class="fix-v">v</span><span title="Norway">NOR</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="Argentina">ARG</span><span class="fix-v">v</span><span title="Algeria">ALG</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="Austria">AUT</span><span class="fix-v">v</span><span title="Jordan">JOR</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="Portugal">POR</span><span class="fix-v">v</span><span title="DR Congo">COD</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="England">ENG</span><span class="fix-v">v</span><span title="Croatia">CRO</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="Ghana">GHA</span><span class="fix-v">v</span><span title="Panama">PAN</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="Uzbekistan">UZB</span><span class="fix-v">v</span><span title="Colombia">COL</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="Czech Republic">CZE</span><span class="fix-v">v</span><span title="South Africa">RSA</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="Switzerland">SUI</span><span class="fix-v">v</span><span title="Bosnia & Herz.">BIH</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="Canada">CAN</span><span class="fix-v">v</span><span title="Qatar">QAT</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="Mexico">MEX</span><span class="fix-v">v</span><span title="South Korea">KOR</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="United States">USA</span><span class="fix-v">v</span><span title="Australia">AUS</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="Scotland">SCO</span><span class="fix-v">v</span><span title="Morocco">MAR</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="Brazil">BRA</span><span class="fix-v">v</span><span title="Haiti">HAI</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="Turkey">TUR</span><span class="fix-v">v</span><span title="Paraguay">PAR</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="Netherlands">NED</span><span class="fix-v">v</span><span title="Sweden">SWE</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="Germany">GER</span><span class="fix-v">v</span><span title="Côte d'Ivoire">CIV</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="Ecuador">ECU</span><span class="fix-v">v</span><span title="Curaçao">CUW</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="Tunisia">TUN</span><span class="fix-v">v</span><span title="Japan">JPN</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="Spain">ESP</span><span class="fix-v">v</span><span title="Saudi Arabia">KSA</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="Belgium">BEL</span><span class="fix-v">v</span><span title="Iran">IRN</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="Uruguay">URU</span><span class="fix-v">v</span><span title="Cape Verde">CPV</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="New Zealand">NZL</span><span class="fix-v">v</span><span title="Egypt">EGY</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="Argentina">ARG</span><span class="fix-v">v</span><span title="Austria">AUT</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="France">FRA</span><span class="fix-v">v</span><span title="Iraq">IRQ</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="Norway">NOR</span><span class="fix-v">v</span><span title="Senegal">SEN</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="Jordan">JOR</span><span class="fix-v">v</span><span title="Algeria">ALG</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="Portugal">POR</span><span class="fix-v">v</span><span title="Uzbekistan">UZB</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="England">ENG</span><span class="fix-v">v</span><span title="Ghana">GHA</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="Panama">PAN</span><span class="fix-v">v</span><span title="Croatia">CRO</span></div></th>
-<th class="fix-hdr"><div class="rnd-badge-spacer"></div><div class="fix-label"><span title="Colombia">COL</span><span class="fix-v">v</span><span title="DR Congo">COD</span></div></th>
+    <tr class="round-title-row"><th class="corner"></th><th colspan="24" class="round-title-cell rnd-start">Group Stage - Part 1</th><th colspan="24" class="round-title-cell rnd-start">Group Stage - Part 2</th><th colspan="24" class="round-title-cell rnd-start">Group Stage - Part 3</th></tr>
+    <tr><th class="corner"></th><th class="fix-hdr rnd-start" data-fix="1" data-home="MEX" data-away="RSA" data-home-full="Mexico" data-away-full="South Africa" data-result="H"><div class="fix-label"><span>MEX</span><span class="fix-v">v</span><span>RSA</span></div></th>
+<th class="fix-hdr" data-fix="2" data-home="KOR" data-away="CZE" data-home-full="South Korea" data-away-full="Czech Republic" data-result="H"><div class="fix-label"><span>KOR</span><span class="fix-v">v</span><span>CZE</span></div></th>
+<th class="fix-hdr" data-fix="3" data-home="CAN" data-away="BIH" data-home-full="Canada" data-away-full="Bosnia & Herz." data-result="D"><div class="fix-label"><span>CAN</span><span class="fix-v">v</span><span>BIH</span></div></th>
+<th class="fix-hdr" data-fix="4" data-home="USA" data-away="PAR" data-home-full="United States" data-away-full="Paraguay" data-result="H"><div class="fix-label"><span>USA</span><span class="fix-v">v</span><span>PAR</span></div></th>
+<th class="fix-hdr" data-fix="5" data-home="QAT" data-away="SUI" data-home-full="Qatar" data-away-full="Switzerland" data-result="D"><div class="fix-label"><span>QAT</span><span class="fix-v">v</span><span>SUI</span></div></th>
+<th class="fix-hdr" data-fix="6" data-home="BRA" data-away="MAR" data-home-full="Brazil" data-away-full="Morocco" data-result="D"><div class="fix-label"><span>BRA</span><span class="fix-v">v</span><span>MAR</span></div></th>
+<th class="fix-hdr" data-fix="7" data-home="HAI" data-away="SCO" data-home-full="Haiti" data-away-full="Scotland" data-result="A"><div class="fix-label"><span>HAI</span><span class="fix-v">v</span><span>SCO</span></div></th>
+<th class="fix-hdr" data-fix="8" data-home="AUS" data-away="TUR" data-home-full="Australia" data-away-full="Turkey" data-result="H"><div class="fix-label"><span>AUS</span><span class="fix-v">v</span><span>TUR</span></div></th>
+<th class="fix-hdr" data-fix="9" data-home="GER" data-away="CUW" data-home-full="Germany" data-away-full="Curaçao" data-result="H"><div class="fix-label"><span>GER</span><span class="fix-v">v</span><span>CUW</span></div></th>
+<th class="fix-hdr" data-fix="10" data-home="NED" data-away="JPN" data-home-full="Netherlands" data-away-full="Japan" data-result="D"><div class="fix-label"><span>NED</span><span class="fix-v">v</span><span>JPN</span></div></th>
+<th class="fix-hdr" data-fix="11" data-home="CIV" data-away="ECU" data-home-full="Côte d'Ivoire" data-away-full="Ecuador" data-result="H"><div class="fix-label"><span>CIV</span><span class="fix-v">v</span><span>ECU</span></div></th>
+<th class="fix-hdr" data-fix="12" data-home="SWE" data-away="TUN" data-home-full="Sweden" data-away-full="Tunisia" data-result="H"><div class="fix-label"><span>SWE</span><span class="fix-v">v</span><span>TUN</span></div></th>
+<th class="fix-hdr" data-fix="13" data-home="ESP" data-away="CPV" data-home-full="Spain" data-away-full="Cape Verde" data-result="D"><div class="fix-label"><span>ESP</span><span class="fix-v">v</span><span>CPV</span></div></th>
+<th class="fix-hdr" data-fix="14" data-home="BEL" data-away="EGY" data-home-full="Belgium" data-away-full="Egypt" data-result="D"><div class="fix-label"><span>BEL</span><span class="fix-v">v</span><span>EGY</span></div></th>
+<th class="fix-hdr" data-fix="15" data-home="KSA" data-away="URU" data-home-full="Saudi Arabia" data-away-full="Uruguay" data-result="D"><div class="fix-label"><span>KSA</span><span class="fix-v">v</span><span>URU</span></div></th>
+<th class="fix-hdr" data-fix="16" data-home="IRN" data-away="NZL" data-home-full="Iran" data-away-full="New Zealand" data-result="D"><div class="fix-label"><span>IRN</span><span class="fix-v">v</span><span>NZL</span></div></th>
+<th class="fix-hdr" data-fix="17" data-home="FRA" data-away="SEN" data-home-full="France" data-away-full="Senegal" data-result="H"><div class="fix-label"><span>FRA</span><span class="fix-v">v</span><span>SEN</span></div></th>
+<th class="fix-hdr" data-fix="18" data-home="IRQ" data-away="NOR" data-home-full="Iraq" data-away-full="Norway" data-result="A"><div class="fix-label"><span>IRQ</span><span class="fix-v">v</span><span>NOR</span></div></th>
+<th class="fix-hdr" data-fix="19" data-home="ARG" data-away="ALG" data-home-full="Argentina" data-away-full="Algeria" data-result="H"><div class="fix-label"><span>ARG</span><span class="fix-v">v</span><span>ALG</span></div></th>
+<th class="fix-hdr" data-fix="20" data-home="AUT" data-away="JOR" data-home-full="Austria" data-away-full="Jordan" data-result="H"><div class="fix-label"><span>AUT</span><span class="fix-v">v</span><span>JOR</span></div></th>
+<th class="fix-hdr" data-fix="21" data-home="POR" data-away="COD" data-home-full="Portugal" data-away-full="DR Congo" data-result="D"><div class="fix-label"><span>POR</span><span class="fix-v">v</span><span>COD</span></div></th>
+<th class="fix-hdr" data-fix="22" data-home="ENG" data-away="CRO" data-home-full="England" data-away-full="Croatia" data-result="H"><div class="fix-label"><span>ENG</span><span class="fix-v">v</span><span>CRO</span></div></th>
+<th class="fix-hdr" data-fix="23" data-home="GHA" data-away="PAN" data-home-full="Ghana" data-away-full="Panama" data-result="H"><div class="fix-label"><span>GHA</span><span class="fix-v">v</span><span>PAN</span></div></th>
+<th class="fix-hdr" data-fix="24" data-home="UZB" data-away="COL" data-home-full="Uzbekistan" data-away-full="Colombia" data-result="A"><div class="fix-label"><span>UZB</span><span class="fix-v">v</span><span>COL</span></div></th>
+<th class="fix-hdr rnd-start" data-fix="25" data-home="CZE" data-away="RSA" data-home-full="Czech Republic" data-away-full="South Africa" data-result="D"><div class="fix-label"><span>CZE</span><span class="fix-v">v</span><span>RSA</span></div></th>
+<th class="fix-hdr" data-fix="26" data-home="SUI" data-away="BIH" data-home-full="Switzerland" data-away-full="Bosnia & Herz." data-result="H"><div class="fix-label"><span>SUI</span><span class="fix-v">v</span><span>BIH</span></div></th>
+<th class="fix-hdr" data-fix="27" data-home="CAN" data-away="QAT" data-home-full="Canada" data-away-full="Qatar" data-result="H"><div class="fix-label"><span>CAN</span><span class="fix-v">v</span><span>QAT</span></div></th>
+<th class="fix-hdr" data-fix="28" data-home="MEX" data-away="KOR" data-home-full="Mexico" data-away-full="South Korea" data-result="H"><div class="fix-label"><span>MEX</span><span class="fix-v">v</span><span>KOR</span></div></th>
+<th class="fix-hdr" data-fix="29" data-home="USA" data-away="AUS" data-home-full="United States" data-away-full="Australia" data-result="H"><div class="fix-label"><span>USA</span><span class="fix-v">v</span><span>AUS</span></div></th>
+<th class="fix-hdr" data-fix="30" data-home="SCO" data-away="MAR" data-home-full="Scotland" data-away-full="Morocco" data-result="A"><div class="fix-label"><span>SCO</span><span class="fix-v">v</span><span>MAR</span></div></th>
+<th class="fix-hdr" data-fix="31" data-home="BRA" data-away="HAI" data-home-full="Brazil" data-away-full="Haiti" data-result="H"><div class="fix-label"><span>BRA</span><span class="fix-v">v</span><span>HAI</span></div></th>
+<th class="fix-hdr" data-fix="32" data-home="TUR" data-away="PAR" data-home-full="Turkey" data-away-full="Paraguay" data-result="A"><div class="fix-label"><span>TUR</span><span class="fix-v">v</span><span>PAR</span></div></th>
+<th class="fix-hdr" data-fix="33" data-home="NED" data-away="SWE" data-home-full="Netherlands" data-away-full="Sweden" data-result="H"><div class="fix-label"><span>NED</span><span class="fix-v">v</span><span>SWE</span></div></th>
+<th class="fix-hdr" data-fix="34" data-home="GER" data-away="CIV" data-home-full="Germany" data-away-full="Côte d'Ivoire" data-result="H"><div class="fix-label"><span>GER</span><span class="fix-v">v</span><span>CIV</span></div></th>
+<th class="fix-hdr" data-fix="35" data-home="ECU" data-away="CUW" data-home-full="Ecuador" data-away-full="Curaçao" data-result="D"><div class="fix-label"><span>ECU</span><span class="fix-v">v</span><span>CUW</span></div></th>
+<th class="fix-hdr" data-fix="36" data-home="TUN" data-away="JPN" data-home-full="Tunisia" data-away-full="Japan" data-result="A"><div class="fix-label"><span>TUN</span><span class="fix-v">v</span><span>JPN</span></div></th>
+<th class="fix-hdr" data-fix="37" data-home="ESP" data-away="KSA" data-home-full="Spain" data-away-full="Saudi Arabia" data-result="H"><div class="fix-label"><span>ESP</span><span class="fix-v">v</span><span>KSA</span></div></th>
+<th class="fix-hdr" data-fix="38" data-home="BEL" data-away="IRN" data-home-full="Belgium" data-away-full="Iran" data-result="D"><div class="fix-label"><span>BEL</span><span class="fix-v">v</span><span>IRN</span></div></th>
+<th class="fix-hdr" data-fix="39" data-home="URU" data-away="CPV" data-home-full="Uruguay" data-away-full="Cape Verde" data-result="D"><div class="fix-label"><span>URU</span><span class="fix-v">v</span><span>CPV</span></div></th>
+<th class="fix-hdr" data-fix="40" data-home="NZL" data-away="EGY" data-home-full="New Zealand" data-away-full="Egypt" data-result="A"><div class="fix-label"><span>NZL</span><span class="fix-v">v</span><span>EGY</span></div></th>
+<th class="fix-hdr" data-fix="41" data-home="ARG" data-away="AUT" data-home-full="Argentina" data-away-full="Austria" data-result="H"><div class="fix-label"><span>ARG</span><span class="fix-v">v</span><span>AUT</span></div></th>
+<th class="fix-hdr" data-fix="42" data-home="FRA" data-away="IRQ" data-home-full="France" data-away-full="Iraq" data-result="H"><div class="fix-label"><span>FRA</span><span class="fix-v">v</span><span>IRQ</span></div></th>
+<th class="fix-hdr" data-fix="43" data-home="NOR" data-away="SEN" data-home-full="Norway" data-away-full="Senegal" data-result="H"><div class="fix-label"><span>NOR</span><span class="fix-v">v</span><span>SEN</span></div></th>
+<th class="fix-hdr" data-fix="44" data-home="JOR" data-away="ALG" data-home-full="Jordan" data-away-full="Algeria" data-result="A"><div class="fix-label"><span>JOR</span><span class="fix-v">v</span><span>ALG</span></div></th>
+<th class="fix-hdr" data-fix="45" data-home="POR" data-away="UZB" data-home-full="Portugal" data-away-full="Uzbekistan" data-result="H"><div class="fix-label"><span>POR</span><span class="fix-v">v</span><span>UZB</span></div></th>
+<th class="fix-hdr" data-fix="46" data-home="ENG" data-away="GHA" data-home-full="England" data-away-full="Ghana" data-result="D"><div class="fix-label"><span>ENG</span><span class="fix-v">v</span><span>GHA</span></div></th>
+<th class="fix-hdr" data-fix="47" data-home="PAN" data-away="CRO" data-home-full="Panama" data-away-full="Croatia" data-result="A"><div class="fix-label"><span>PAN</span><span class="fix-v">v</span><span>CRO</span></div></th>
+<th class="fix-hdr" data-fix="48" data-home="COL" data-away="COD" data-home-full="Colombia" data-away-full="DR Congo" data-result="H"><div class="fix-label"><span>COL</span><span class="fix-v">v</span><span>COD</span></div></th>
+<th class="fix-hdr rnd-start" data-fix="49" data-home="SUI" data-away="CAN" data-home-full="Switzerland" data-away-full="Canada"><div class="fix-label"><span>SUI</span><span class="fix-v">v</span><span>CAN</span></div></th>
+<th class="fix-hdr" data-fix="50" data-home="BIH" data-away="QAT" data-home-full="Bosnia & Herz." data-away-full="Qatar"><div class="fix-label"><span>BIH</span><span class="fix-v">v</span><span>QAT</span></div></th>
+<th class="fix-hdr" data-fix="51" data-home="MAR" data-away="HAI" data-home-full="Morocco" data-away-full="Haiti"><div class="fix-label"><span>MAR</span><span class="fix-v">v</span><span>HAI</span></div></th>
+<th class="fix-hdr" data-fix="52" data-home="SCO" data-away="BRA" data-home-full="Scotland" data-away-full="Brazil"><div class="fix-label"><span>SCO</span><span class="fix-v">v</span><span>BRA</span></div></th>
+<th class="fix-hdr" data-fix="53" data-home="RSA" data-away="KOR" data-home-full="South Africa" data-away-full="South Korea"><div class="fix-label"><span>RSA</span><span class="fix-v">v</span><span>KOR</span></div></th>
+<th class="fix-hdr" data-fix="54" data-home="CZE" data-away="MEX" data-home-full="Czech Republic" data-away-full="Mexico"><div class="fix-label"><span>CZE</span><span class="fix-v">v</span><span>MEX</span></div></th>
+<th class="fix-hdr" data-fix="55" data-home="CUW" data-away="CIV" data-home-full="Curaçao" data-away-full="Côte d'Ivoire"><div class="fix-label"><span>CUW</span><span class="fix-v">v</span><span>CIV</span></div></th>
+<th class="fix-hdr" data-fix="56" data-home="ECU" data-away="GER" data-home-full="Ecuador" data-away-full="Germany"><div class="fix-label"><span>ECU</span><span class="fix-v">v</span><span>GER</span></div></th>
+<th class="fix-hdr" data-fix="57" data-home="TUN" data-away="NED" data-home-full="Tunisia" data-away-full="Netherlands"><div class="fix-label"><span>TUN</span><span class="fix-v">v</span><span>NED</span></div></th>
+<th class="fix-hdr" data-fix="58" data-home="JPN" data-away="SWE" data-home-full="Japan" data-away-full="Sweden"><div class="fix-label"><span>JPN</span><span class="fix-v">v</span><span>SWE</span></div></th>
+<th class="fix-hdr" data-fix="59" data-home="TUR" data-away="USA" data-home-full="Turkey" data-away-full="United States"><div class="fix-label"><span>TUR</span><span class="fix-v">v</span><span>USA</span></div></th>
+<th class="fix-hdr" data-fix="60" data-home="PAR" data-away="AUS" data-home-full="Paraguay" data-away-full="Australia"><div class="fix-label"><span>PAR</span><span class="fix-v">v</span><span>AUS</span></div></th>
+<th class="fix-hdr" data-fix="61" data-home="NOR" data-away="FRA" data-home-full="Norway" data-away-full="France"><div class="fix-label"><span>NOR</span><span class="fix-v">v</span><span>FRA</span></div></th>
+<th class="fix-hdr" data-fix="62" data-home="SEN" data-away="IRQ" data-home-full="Senegal" data-away-full="Iraq"><div class="fix-label"><span>SEN</span><span class="fix-v">v</span><span>IRQ</span></div></th>
+<th class="fix-hdr" data-fix="63" data-home="CPV" data-away="KSA" data-home-full="Cape Verde" data-away-full="Saudi Arabia"><div class="fix-label"><span>CPV</span><span class="fix-v">v</span><span>KSA</span></div></th>
+<th class="fix-hdr" data-fix="64" data-home="URU" data-away="ESP" data-home-full="Uruguay" data-away-full="Spain"><div class="fix-label"><span>URU</span><span class="fix-v">v</span><span>ESP</span></div></th>
+<th class="fix-hdr" data-fix="65" data-home="NZL" data-away="BEL" data-home-full="New Zealand" data-away-full="Belgium"><div class="fix-label"><span>NZL</span><span class="fix-v">v</span><span>BEL</span></div></th>
+<th class="fix-hdr" data-fix="66" data-home="EGY" data-away="IRN" data-home-full="Egypt" data-away-full="Iran"><div class="fix-label"><span>EGY</span><span class="fix-v">v</span><span>IRN</span></div></th>
+<th class="fix-hdr" data-fix="67" data-home="PAN" data-away="ENG" data-home-full="Panama" data-away-full="England"><div class="fix-label"><span>PAN</span><span class="fix-v">v</span><span>ENG</span></div></th>
+<th class="fix-hdr" data-fix="68" data-home="CRO" data-away="GHA" data-home-full="Croatia" data-away-full="Ghana"><div class="fix-label"><span>CRO</span><span class="fix-v">v</span><span>GHA</span></div></th>
+<th class="fix-hdr" data-fix="69" data-home="COL" data-away="POR" data-home-full="Colombia" data-away-full="Portugal"><div class="fix-label"><span>COL</span><span class="fix-v">v</span><span>POR</span></div></th>
+<th class="fix-hdr" data-fix="70" data-home="COD" data-away="UZB" data-home-full="DR Congo" data-away-full="Uzbekistan"><div class="fix-label"><span>COD</span><span class="fix-v">v</span><span>UZB</span></div></th>
+<th class="fix-hdr" data-fix="71" data-home="ALG" data-away="AUT" data-home-full="Algeria" data-away-full="Austria"><div class="fix-label"><span>ALG</span><span class="fix-v">v</span><span>AUT</span></div></th>
+<th class="fix-hdr" data-fix="72" data-home="JOR" data-away="ARG" data-home-full="Jordan" data-away-full="Argentina"><div class="fix-label"><span>JOR</span><span class="fix-v">v</span><span>ARG</span></div></th>
 </tr>
   </thead>
   <tbody>
-    <tr class="round-title-row"><td></td><td colspan="24" class="round-title-cell">Group Stage - Part 1</td><td colspan="24" class="round-title-cell">Group Stage - Part 2</td></tr>
-    <tr data-p="Sam"><td class="player-name" style="color:#E63946">Sam</td><td id="r1"><div class="cell" style="background:#1a7a4a" title="Mexico"><span class="fi fi-mx" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>MEX</span></div></td>
+    <tr data-p="Sam"><td class="player-name" style="color:#E63946">Sam</td><td id="r1" class="rnd-start"><div class="cell" style="background:#1a7a4a" title="Mexico"><span class="fi fi-mx" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>MEX</span></div></td>
 <td><div class="cell" style="background:#8b2020" title="Draw"><span>Draw</span></div></td>
 <td><div class="cell" style="background:#8b2020" title="Canada"><span class="fi fi-ca" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>CAN</span></div></td>
 <td><div class="cell" style="background:#8b2020" title="Paraguay"><span class="fi fi-py" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>PAR</span></div></td>
@@ -784,7 +828,7 @@
 <td><div class="cell" style="background:#1a7a4a" title="England" data-diff="1"><span class="fi fi-gb-eng" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>ENG</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="Ghana" data-diff="1"><span class="fi fi-gh" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>GHA</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="Colombia"><span class="fi fi-co" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>COL</span></div></td>
-<td id="r2"><div class="cell" style="background:#1a7a4a" title="Draw" data-diff="1"><span>Draw</span></div></td>
+<td id="r2" class="rnd-start"><div class="cell" style="background:#1a7a4a" title="Draw" data-diff="1"><span>Draw</span></div></td>
 <td><div class="cell" style="background:#8b2020" title="Draw"><span>Draw</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="Canada" data-diff="1"><span class="fi fi-ca" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>CAN</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="Mexico" data-diff="1"><span class="fi fi-mx" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>MEX</span></div></td>
@@ -806,10 +850,34 @@
 <td><div class="cell" style="background:#1a7a4a" title="Algeria" data-diff="1"><span class="fi fi-dz" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>ALG</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="Portugal"><span class="fi fi-pt" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>POR</span></div></td>
 <td><div class="cell" style="background:#8b2020" title="England"><span class="fi fi-gb-eng" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>ENG</span></div></td>
-<td><div class="cell" style="background:#1a7a4a" title="Croatia"><span class="fi fi-hr" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>CRO</span></div></td>
+<td id="latest"><div class="cell" style="background:#1a7a4a" title="Croatia"><span class="fi fi-hr" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>CRO</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="Colombia" data-diff="1"><span class="fi fi-co" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>COL</span></div></td>
+<td id="r3" class="rnd-start"><div class="cell" style="background:#1e3a5f" title="Draw" data-pending="1"><span>Draw</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Bosnia & Herz." data-pending="1"><span class="fi fi-ba" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>BIH</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Morocco" data-pending="1"><span class="fi fi-ma" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>MAR</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Brazil" data-pending="1"><span class="fi fi-br" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>BRA</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="South Korea" data-pending="1"><span class="fi fi-kr" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>KOR</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Mexico" data-pending="1"><span class="fi fi-mx" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>MEX</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Côte d'Ivoire" data-pending="1"><span class="fi fi-ci" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>CIV</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Germany" data-pending="1"><span class="fi fi-de" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>GER</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Netherlands" data-pending="1"><span class="fi fi-nl" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>NED</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Japan" data-pending="1"><span class="fi fi-jp" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>JPN</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="United States" data-pending="1"><span class="fi fi-us" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>USA</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Australia" data-pending="1"><span class="fi fi-au" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>AUS</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="France" data-pending="1"><span class="fi fi-fr" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>FRA</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Senegal" data-pending="1"><span class="fi fi-sn" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>SEN</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Draw" data-pending="1"><span>Draw</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Spain" data-pending="1"><span class="fi fi-es" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>ESP</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Belgium" data-pending="1"><span class="fi fi-be" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>BEL</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Egypt" data-pending="1"><span class="fi fi-eg" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>EGY</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="England" data-pending="1"><span class="fi fi-gb-eng" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>ENG</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Draw" data-pending="1"><span>Draw</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Draw" data-pending="1"><span>Draw</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Draw" data-pending="1"><span>Draw</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Austria" data-pending="1"><span class="fi fi-at" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>AUT</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Argentina" data-pending="1"><span class="fi fi-ar" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>ARG</span></div></td>
 </tr>
-<tr data-p="Adrienne"><td class="player-name" style="color:#457B9D">Adrienne</td><td><div class="cell" style="background:#1a7a4a" title="Mexico"><span class="fi fi-mx" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>MEX</span></div></td>
+<tr data-p="Adrienne"><td class="player-name" style="color:#457B9D">Adrienne</td><td class="rnd-start"><div class="cell" style="background:#1a7a4a" title="Mexico"><span class="fi fi-mx" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>MEX</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="South Korea" data-diff="1"><span class="fi fi-kr" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>KOR</span></div></td>
 <td><div class="cell" style="background:#8b2020" title="Canada"><span class="fi fi-ca" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>CAN</span></div></td>
 <td><div class="cell" style="background:#8b2020" title="Draw"><span>Draw</span></div></td>
@@ -833,7 +901,7 @@
 <td><div class="cell" style="background:#1a7a4a" title="England" data-diff="1"><span class="fi fi-gb-eng" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>ENG</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="Ghana" data-diff="1"><span class="fi fi-gh" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>GHA</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="Colombia"><span class="fi fi-co" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>COL</span></div></td>
-<td><div class="cell" style="background:#1a7a4a" title="Draw" data-diff="1"><span>Draw</span></div></td>
+<td class="rnd-start"><div class="cell" style="background:#1a7a4a" title="Draw" data-diff="1"><span>Draw</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="Switzerland" data-diff="1"><span class="fi fi-ch" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>SUI</span></div></td>
 <td><div class="cell" style="background:#8b2020" title="Draw"><span>Draw</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="Mexico" data-diff="1"><span class="fi fi-mx" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>MEX</span></div></td>
@@ -857,8 +925,32 @@
 <td><div class="cell" style="background:#8b2020" title="England"><span class="fi fi-gb-eng" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>ENG</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="Croatia"><span class="fi fi-hr" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>CRO</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="Colombia" data-diff="1"><span class="fi fi-co" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>COL</span></div></td>
+<td class="rnd-start"><div class="cell" style="background:#1e3a5f" title="Draw" data-pending="1"><span>Draw</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Bosnia & Herz." data-pending="1"><span class="fi fi-ba" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>BIH</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Morocco" data-pending="1"><span class="fi fi-ma" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>MAR</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Brazil" data-pending="1"><span class="fi fi-br" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>BRA</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="South Africa" data-pending="1"><span class="fi fi-za" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>RSA</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Mexico" data-pending="1"><span class="fi fi-mx" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>MEX</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Côte d'Ivoire" data-pending="1"><span class="fi fi-ci" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>CIV</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Draw" data-pending="1"><span>Draw</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Netherlands" data-pending="1"><span class="fi fi-nl" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>NED</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Japan" data-pending="1"><span class="fi fi-jp" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>JPN</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="United States" data-pending="1"><span class="fi fi-us" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>USA</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Paraguay" data-pending="1"><span class="fi fi-py" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>PAR</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="France" data-pending="1"><span class="fi fi-fr" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>FRA</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Senegal" data-pending="1"><span class="fi fi-sn" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>SEN</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Saudi Arabia" data-pending="1"><span class="fi fi-sa" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>KSA</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Spain" data-pending="1"><span class="fi fi-es" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>ESP</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Belgium" data-pending="1"><span class="fi fi-be" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>BEL</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Egypt" data-pending="1"><span class="fi fi-eg" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>EGY</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="England" data-pending="1"><span class="fi fi-gb-eng" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>ENG</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Croatia" data-pending="1"><span class="fi fi-hr" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>CRO</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Portugal" data-pending="1"><span class="fi fi-pt" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>POR</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Draw" data-pending="1"><span>Draw</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Draw" data-pending="1"><span>Draw</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Argentina" data-pending="1"><span class="fi fi-ar" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>ARG</span></div></td>
 </tr>
-<tr data-p="JohnnyJ"><td class="player-name" style="color:#2A9D8F">JohnnyJ</td><td><div class="cell" style="background:#1a7a4a" title="Mexico"><span class="fi fi-mx" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>MEX</span></div></td>
+<tr data-p="JohnnyJ"><td class="player-name" style="color:#2A9D8F">JohnnyJ</td><td class="rnd-start"><div class="cell" style="background:#1a7a4a" title="Mexico"><span class="fi fi-mx" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>MEX</span></div></td>
 <td><div class="cell" style="background:#8b2020" title="Draw"><span>Draw</span></div></td>
 <td><div class="cell" style="background:#8b2020" title="Canada"><span class="fi fi-ca" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>CAN</span></div></td>
 <td><div class="cell" style="background:#8b2020" title="Draw"><span>Draw</span></div></td>
@@ -882,7 +974,7 @@
 <td><div class="cell" style="background:#1a7a4a" title="England" data-diff="1"><span class="fi fi-gb-eng" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>ENG</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="Ghana" data-diff="1"><span class="fi fi-gh" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>GHA</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="Colombia"><span class="fi fi-co" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>COL</span></div></td>
-<td><div class="cell" style="background:#8b2020" title="Czech Republic"><span class="fi fi-cz" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>CZE</span></div></td>
+<td class="rnd-start"><div class="cell" style="background:#8b2020" title="Czech Republic"><span class="fi fi-cz" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>CZE</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="Switzerland" data-diff="1"><span class="fi fi-ch" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>SUI</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="Canada" data-diff="1"><span class="fi fi-ca" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>CAN</span></div></td>
 <td><div class="cell" style="background:#8b2020" title="Draw"><span>Draw</span></div></td>
@@ -906,8 +998,32 @@
 <td><div class="cell" style="background:#8b2020" title="England"><span class="fi fi-gb-eng" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>ENG</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="Croatia"><span class="fi fi-hr" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>CRO</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="Colombia" data-diff="1"><span class="fi fi-co" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>COL</span></div></td>
+<td class="rnd-start"><div class="cell" style="background:#1e3a5f" title="Draw" data-pending="1"><span>Draw</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Bosnia & Herz." data-pending="1"><span class="fi fi-ba" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>BIH</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Morocco" data-pending="1"><span class="fi fi-ma" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>MAR</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Brazil" data-pending="1"><span class="fi fi-br" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>BRA</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="South Korea" data-pending="1"><span class="fi fi-kr" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>KOR</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Draw" data-pending="1"><span>Draw</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Côte d'Ivoire" data-pending="1"><span class="fi fi-ci" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>CIV</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Germany" data-pending="1"><span class="fi fi-de" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>GER</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Netherlands" data-pending="1"><span class="fi fi-nl" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>NED</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Japan" data-pending="1"><span class="fi fi-jp" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>JPN</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="United States" data-pending="1"><span class="fi fi-us" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>USA</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Draw" data-pending="1"><span>Draw</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="France" data-pending="1"><span class="fi fi-fr" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>FRA</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Senegal" data-pending="1"><span class="fi fi-sn" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>SEN</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Saudi Arabia" data-pending="1"><span class="fi fi-sa" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>KSA</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Draw" data-pending="1"><span>Draw</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Belgium" data-pending="1"><span class="fi fi-be" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>BEL</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Draw" data-pending="1"><span>Draw</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="England" data-pending="1"><span class="fi fi-gb-eng" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>ENG</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Croatia" data-pending="1"><span class="fi fi-hr" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>CRO</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Colombia" data-pending="1"><span class="fi fi-co" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>COL</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="DR Congo" data-pending="1"><span class="fi fi-cd" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>COD</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Austria" data-pending="1"><span class="fi fi-at" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>AUT</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Argentina" data-pending="1"><span class="fi fi-ar" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>ARG</span></div></td>
 </tr>
-<tr data-p="Gwyn Thomas"><td class="player-name" style="color:#a78bfa">Gwyn Thomas</td><td><div class="cell" style="background:#1a7a4a" title="Mexico"><span class="fi fi-mx" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>MEX</span></div></td>
+<tr data-p="Gwyn Thomas"><td class="player-name" style="color:#a78bfa">Gwyn Thomas</td><td class="rnd-start"><div class="cell" style="background:#1a7a4a" title="Mexico"><span class="fi fi-mx" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>MEX</span></div></td>
 <td><div class="cell" style="background:#8b2020" title="Czech Republic"><span class="fi fi-cz" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>CZE</span></div></td>
 <td><div class="cell" style="background:#8b2020" title="Canada"><span class="fi fi-ca" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>CAN</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="United States" data-diff="1"><span class="fi fi-us" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>USA</span></div></td>
@@ -931,7 +1047,7 @@
 <td><div class="cell" style="background:#1a7a4a" title="England" data-diff="1"><span class="fi fi-gb-eng" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>ENG</span></div></td>
 <td><div class="cell" style="background:#8b2020" title="Panama"><span class="fi fi-pa" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>PAN</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="Colombia"><span class="fi fi-co" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>COL</span></div></td>
-<td><div class="cell" style="background:#8b2020" title="South Africa"><span class="fi fi-za" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>RSA</span></div></td>
+<td class="rnd-start"><div class="cell" style="background:#8b2020" title="South Africa"><span class="fi fi-za" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>RSA</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="Switzerland" data-diff="1"><span class="fi fi-ch" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>SUI</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="Canada" data-diff="1"><span class="fi fi-ca" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>CAN</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="Mexico" data-diff="1"><span class="fi fi-mx" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>MEX</span></div></td>
@@ -955,8 +1071,32 @@
 <td><div class="cell" style="background:#8b2020" title="England"><span class="fi fi-gb-eng" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>ENG</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="Croatia"><span class="fi fi-hr" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>CRO</span></div></td>
 <td><div class="cell" style="background:#8b2020" title="Draw"><span>Draw</span></div></td>
+<td class="rnd-start"><div class="cell" style="background:#1e3a5f" title="Canada" data-pending="1"><span class="fi fi-ca" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>CAN</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Draw" data-pending="1"><span>Draw</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Draw" data-pending="1"><span>Draw</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Brazil" data-pending="1"><span class="fi fi-br" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>BRA</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="South Africa" data-pending="1"><span class="fi fi-za" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>RSA</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Mexico" data-pending="1"><span class="fi fi-mx" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>MEX</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Draw" data-pending="1"><span>Draw</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Germany" data-pending="1"><span class="fi fi-de" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>GER</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Netherlands" data-pending="1"><span class="fi fi-nl" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>NED</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Sweden" data-pending="1"><span class="fi fi-se" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>SWE</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Turkey" data-pending="1"><span class="fi fi-tr" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>TUR</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Paraguay" data-pending="1"><span class="fi fi-py" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>PAR</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Norway" data-pending="1"><span class="fi fi-no" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>NOR</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Draw" data-pending="1"><span>Draw</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Draw" data-pending="1"><span>Draw</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Spain" data-pending="1"><span class="fi fi-es" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>ESP</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="New Zealand" data-pending="1"><span class="fi fi-nz" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>NZL</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Egypt" data-pending="1"><span class="fi fi-eg" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>EGY</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Draw" data-pending="1"><span>Draw</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Croatia" data-pending="1"><span class="fi fi-hr" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>CRO</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Portugal" data-pending="1"><span class="fi fi-pt" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>POR</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="DR Congo" data-pending="1"><span class="fi fi-cd" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>COD</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Austria" data-pending="1"><span class="fi fi-at" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>AUT</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Argentina" data-pending="1"><span class="fi fi-ar" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>ARG</span></div></td>
 </tr>
-<tr data-p="Matt"><td class="player-name" style="color:#F4A261">Matt</td><td><div class="cell" style="background:#1a7a4a" title="Mexico"><span class="fi fi-mx" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>MEX</span></div></td>
+<tr data-p="Matt"><td class="player-name" style="color:#F4A261">Matt</td><td class="rnd-start"><div class="cell" style="background:#1a7a4a" title="Mexico"><span class="fi fi-mx" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>MEX</span></div></td>
 <td><div class="cell" style="background:#8b2020" title="Czech Republic"><span class="fi fi-cz" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>CZE</span></div></td>
 <td><div class="cell" style="background:#8b2020" title="Canada"><span class="fi fi-ca" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>CAN</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="United States" data-diff="1"><span class="fi fi-us" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>USA</span></div></td>
@@ -980,7 +1120,7 @@
 <td><div class="cell" style="background:#1a7a4a" title="England" data-diff="1"><span class="fi fi-gb-eng" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>ENG</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="Ghana" data-diff="1"><span class="fi fi-gh" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>GHA</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="Colombia"><span class="fi fi-co" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>COL</span></div></td>
-<td><div class="cell" style="background:#8b2020" title="Czech Republic"><span class="fi fi-cz" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>CZE</span></div></td>
+<td class="rnd-start"><div class="cell" style="background:#8b2020" title="Czech Republic"><span class="fi fi-cz" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>CZE</span></div></td>
 <td><div class="cell" style="background:#8b2020" title="Draw"><span>Draw</span></div></td>
 <td><div class="cell" style="background:#8b2020" title="Qatar"><span class="fi fi-qa" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>QAT</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="Mexico" data-diff="1"><span class="fi fi-mx" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>MEX</span></div></td>
@@ -1004,8 +1144,32 @@
 <td><div class="cell" style="background:#8b2020" title="England"><span class="fi fi-gb-eng" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>ENG</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="Croatia"><span class="fi fi-hr" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>CRO</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="Colombia" data-diff="1"><span class="fi fi-co" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>COL</span></div></td>
+<td class="rnd-start"><div class="cell" style="background:#1e3a5f" title="Draw" data-pending="1"><span>Draw</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Bosnia & Herz." data-pending="1"><span class="fi fi-ba" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>BIH</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Morocco" data-pending="1"><span class="fi fi-ma" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>MAR</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Brazil" data-pending="1"><span class="fi fi-br" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>BRA</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="South Korea" data-pending="1"><span class="fi fi-kr" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>KOR</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Mexico" data-pending="1"><span class="fi fi-mx" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>MEX</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Côte d'Ivoire" data-pending="1"><span class="fi fi-ci" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>CIV</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Germany" data-pending="1"><span class="fi fi-de" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>GER</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Netherlands" data-pending="1"><span class="fi fi-nl" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>NED</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Japan" data-pending="1"><span class="fi fi-jp" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>JPN</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="United States" data-pending="1"><span class="fi fi-us" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>USA</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Draw" data-pending="1"><span>Draw</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="France" data-pending="1"><span class="fi fi-fr" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>FRA</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Senegal" data-pending="1"><span class="fi fi-sn" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>SEN</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Cape Verde" data-pending="1"><span class="fi fi-cv" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>CPV</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Spain" data-pending="1"><span class="fi fi-es" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>ESP</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Belgium" data-pending="1"><span class="fi fi-be" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>BEL</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Egypt" data-pending="1"><span class="fi fi-eg" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>EGY</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="England" data-pending="1"><span class="fi fi-gb-eng" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>ENG</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Ghana" data-pending="1"><span class="fi fi-gh" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>GHA</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Portugal" data-pending="1"><span class="fi fi-pt" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>POR</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="DR Congo" data-pending="1"><span class="fi fi-cd" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>COD</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Austria" data-pending="1"><span class="fi fi-at" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>AUT</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Argentina" data-pending="1"><span class="fi fi-ar" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>ARG</span></div></td>
 </tr>
-<tr data-p="El Roxinho"><td class="player-name" style="color:#60a5fa">El Roxinho</td><td><div class="cell" style="background:#1a7a4a" title="Mexico"><span class="fi fi-mx" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>MEX</span></div></td>
+<tr data-p="El Roxinho"><td class="player-name" style="color:#60a5fa">El Roxinho</td><td class="rnd-start"><div class="cell" style="background:#1a7a4a" title="Mexico"><span class="fi fi-mx" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>MEX</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="South Korea" data-diff="1"><span class="fi fi-kr" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>KOR</span></div></td>
 <td><div class="cell" style="background:#8b2020" title="Canada"><span class="fi fi-ca" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>CAN</span></div></td>
 <td><div class="cell" style="background:#8b2020" title="Draw"><span>Draw</span></div></td>
@@ -1029,7 +1193,7 @@
 <td><div class="cell" style="background:#8b2020" title="Draw"><span>Draw</span></div></td>
 <td><div class="cell" style="background:#8b2020" title="Draw"><span>Draw</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="Colombia"><span class="fi fi-co" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>COL</span></div></td>
-<td><div class="cell" style="background:#1a7a4a" title="Draw" data-diff="1"><span>Draw</span></div></td>
+<td class="rnd-start"><div class="cell" style="background:#1a7a4a" title="Draw" data-diff="1"><span>Draw</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="Switzerland" data-diff="1"><span class="fi fi-ch" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>SUI</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="Canada" data-diff="1"><span class="fi fi-ca" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>CAN</span></div></td>
 <td><div class="cell" style="background:#8b2020" title="South Korea"><span class="fi fi-kr" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>KOR</span></div></td>
@@ -1053,6 +1217,30 @@
 <td><div class="cell" style="background:#8b2020" title="England"><span class="fi fi-gb-eng" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>ENG</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="Croatia"><span class="fi fi-hr" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>CRO</span></div></td>
 <td><div class="cell" style="background:#1a7a4a" title="Colombia" data-diff="1"><span class="fi fi-co" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>COL</span></div></td>
+<td class="rnd-start"><div class="cell" style="background:#1e3a5f" title="Switzerland" data-pending="1"><span class="fi fi-ch" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>SUI</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Qatar" data-pending="1"><span class="fi fi-qa" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>QAT</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Haiti" data-pending="1"><span class="fi fi-ht" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>HAI</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Scotland" data-pending="1"><span class="fi fi-gb-sct" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>SCO</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="South Africa" data-pending="1"><span class="fi fi-za" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>RSA</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Czech Republic" data-pending="1"><span class="fi fi-cz" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>CZE</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Côte d'Ivoire" data-pending="1"><span class="fi fi-ci" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>CIV</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Germany" data-pending="1"><span class="fi fi-de" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>GER</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Netherlands" data-pending="1"><span class="fi fi-nl" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>NED</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Japan" data-pending="1"><span class="fi fi-jp" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>JPN</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="United States" data-pending="1"><span class="fi fi-us" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>USA</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Paraguay" data-pending="1"><span class="fi fi-py" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>PAR</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="France" data-pending="1"><span class="fi fi-fr" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>FRA</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Senegal" data-pending="1"><span class="fi fi-sn" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>SEN</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Draw" data-pending="1"><span>Draw</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Spain" data-pending="1"><span class="fi fi-es" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>ESP</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Belgium" data-pending="1"><span class="fi fi-be" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>BEL</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Egypt" data-pending="1"><span class="fi fi-eg" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>EGY</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="England" data-pending="1"><span class="fi fi-gb-eng" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>ENG</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Ghana" data-pending="1"><span class="fi fi-gh" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>GHA</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Portugal" data-pending="1"><span class="fi fi-pt" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>POR</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="DR Congo" data-pending="1"><span class="fi fi-cd" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>COD</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Draw" data-pending="1"><span>Draw</span></div></td>
+<td><div class="cell" style="background:#1e3a5f" title="Argentina" data-pending="1"><span class="fi fi-ar" style="margin-right:3px;font-size:13px;vertical-align:middle;"></span><span>ARG</span></div></td>
 </tr>
 
   </tbody>
@@ -1074,6 +1262,67 @@
   }
   window.toggleDiff = toggleDiff;
 
+  // ── Fixture header tooltip ─────────────────────────────────────────────────
+  const fixTip = document.createElement('div');
+  fixTip.id = 'fix-tooltip';
+  document.body.appendChild(fixTip);
+
+  const RESULT_LABELS = { H: 'Home win', D: 'Draw', A: 'Away win' };
+  const RESULT_CLASS  = { H: 'ft-win',   D: 'ft-draw', A: 'ft-lose' };
+
+  document.querySelector('.heatmap thead').addEventListener('click', function(e) {
+    const th = e.target.closest('th.fix-hdr');
+    if (!th) { fixTip.style.opacity = 0; return; }
+
+    // Toggle off if clicking the same header twice
+    if (fixTip._src === th && fixTip.style.opacity !== '0') {
+      fixTip.style.opacity = 0;
+      fixTip._src = null;
+      return;
+    }
+    fixTip._src = th;
+
+    const home     = th.dataset.home;
+    const away     = th.dataset.away;
+    const homeFull = th.dataset.homeFull;
+    const awayFull = th.dataset.awayFull;
+    const result   = th.dataset.result;   // undefined if unresolved
+    const fixNo    = th.dataset.fix;
+
+    let resultHtml = '';
+    if (result) {
+      const winnerFull = result === 'H' ? homeFull : result === 'A' ? awayFull : null;
+      const cls        = RESULT_CLASS[result] || '';
+      const label      = RESULT_LABELS[result] || result;
+      resultHtml = `<div class="ft-result">Result: <span class="${cls}">${label}</span>`
+                 + (winnerFull ? ` — <span class="${cls}">${winnerFull}</span>` : '')
+                 + `</div>`;
+    } else {
+      resultHtml = `<div class="ft-result" style="color:#8b949e">Not yet played</div>`;
+    }
+
+    fixTip.innerHTML =
+      `<div class="ft-teams">${homeFull} v ${awayFull}</div>`
+    + `<div style="font-size:0.75rem;color:var(--muted);margin-bottom:2px">Fixture #${fixNo}</div>`
+    + resultHtml;
+
+    // Position: prefer below the header, flip up if near bottom of viewport
+    const rect = th.getBoundingClientRect();
+    const top  = rect.bottom + 6 + window.scrollY;
+    const left = Math.min(rect.left + window.scrollX, window.innerWidth - 200);
+    fixTip.style.left = left + 'px';
+    fixTip.style.top  = top  + 'px';
+    fixTip.style.opacity = 1;
+  });
+
+  // Dismiss on click outside the table header
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('th.fix-hdr')) {
+      fixTip.style.opacity = 0;
+      fixTip._src = null;
+    }
+  });
+
   // ── Global player selection ────────────────────────────────────────────────
   document.addEventListener('ps', e => {
     const sel = e.detail;
@@ -1089,7 +1338,6 @@
 </div>
 <div id="scatter" class="panel">
   <div class="chart-card">
-    <div class="section-title">Accuracy vs Contrarianism</div>
     
 <div id="scatter-container" style="width:100%;max-width:900px;margin:0 auto;">
 
@@ -1106,7 +1354,6 @@
   <div style="text-align:center;margin-top:6px;">
     <span id="sc-label" style="color:#ffd166;font-size:0.82rem;font-weight:700;"></span>
   </div>
-  <div class="control-hint">Drag slider or press Play to step through fixtures</div>
 </div>
 
 <script>
@@ -1277,13 +1524,7 @@
       trailEls[p].attr("d", "");
       return;
     }
-    // Build a series of short segments, each as its own path command,
-    // rendered as a gradient by using multiple <path> would be costly —
-    // instead we use a single path but encode opacity via a gradient trick
-    // using a linearGradient defined per player, or simply draw N segments.
-    // Simplest reliable approach: just one path, opacity ~ 0.3 at head fading.
-    // We'll use a polyline approach and set overall opacity; for a proper
-    // fade we draw individual segments via multiple tiny paths on a group.
+    // Draw fading trail as individual line segments, newest to oldest.
     const seg = g.selectAll(`.trail-seg-${p.split(' ').join('_')}`)
       .data(d3.pairs(hist));
 
@@ -1300,7 +1541,7 @@
     .attr("x2", d => d[1].cx).attr("y2", d => d[1].cy)
     .attr("stroke-width", (d, i) => Math.max(0.5, 2.5 * (1 - i / hist.length)))
     .attr("opacity", (d, i) =>
-      SELECTED.has(p) ? 0.55 * (1 - i / hist.length) : 0.03);
+      SELECTED.has(p) ? 0.55 * (1 - i / hist.length) : 0.03);  // SELECTED is the global ps Set
 
     // Remove stale segments if history shrunk
     trailEls[p].attr("d", "");   // keep the placeholder path
@@ -1593,7 +1834,7 @@
 <div class="bq-card" id="bq-2">
   <div class="bq-header" onclick="toggleBQ('bq-2')">
     <div class="bq-header-left">
-      <span class="bq-chevron" id="bq-2-chev">▾</span>
+      <span class="bq-chevron" id="bq-2-chev">▸</span>
       <div>
         <div class="bq-round">Group Stage - Part 2</div>
         <div class="bq-question">World Cup 2026 Wikipedia edits over 3 days</div>
@@ -1603,8 +1844,8 @@
       <span style="color:#ffd166;font-size:0.8rem;margin-right:12px">Answer: 156</span>
     </div>
   </div>
-  <div class="bq-summary" id="bq-2-summary" style="display:none">🥇 <span class="bq-ps-name" data-ps-player="Sam" data-ps-color="#E63946" style="color:#8b949e">Sam</span>  ·  🥈 <span class="bq-ps-name" data-ps-player="Matt" data-ps-color="#F4A261" style="color:#8b949e">Matt</span></div>
-  <div class="bq-body" id="bq-2-body" style="display:block">
+  <div class="bq-summary" id="bq-2-summary" style="display:block">🥇 <span class="bq-ps-name" data-ps-player="Sam" data-ps-color="#E63946" style="color:#8b949e">Sam</span>  ·  🥈 <span class="bq-ps-name" data-ps-player="Matt" data-ps-color="#F4A261" style="color:#8b949e">Matt</span></div>
+  <div class="bq-body" id="bq-2-body" style="display:none">
     
 <div id="bq-wrap-2" style="width:100%;max-width:860px;margin:0 auto;"></div>
 <script>
@@ -1619,6 +1860,164 @@
   const PH = H - M.top  - M.bottom;
 
   const wrap = d3.select("#bq-wrap-2");
+  const svg  = wrap.append("svg")
+    .attr("id", svgId).attr("width","100%")
+    .attr("viewBox", `0 0 ${W} ${H}`)
+    .style("display","block").style("overflow","visible");
+  const g = svg.append("g").attr("transform", `translate(${M.left},${M.top})`);
+
+  const allVals = DATA.map(d => d.guess).concat(ANSWER != null ? [ANSWER] : []);
+  const lo = d3.min(allVals), hi = d3.max(allVals);
+  const pad = (hi - lo) * 0.08 || 1;
+  const x = d3.scaleLinear().domain([lo - pad, hi + pad]).range([0, PW]);
+  const y = d3.scaleBand().domain(DATA.map(d => d.player))
+              .range([0, PH]).padding(0.35);
+
+  // Subtle grid lines
+  g.append("g").attr("class","grid")
+    .call(d3.axisBottom(x).ticks(5).tickSize(PH).tickFormat(""))
+    .call(gg => gg.select(".domain").remove())
+    .call(gg => gg.selectAll(".tick line")
+      .attr("stroke","rgba(255,255,255,0.07)").attr("y1", 0));
+
+  // X axis
+  const xAxisG = g.append("g").attr("transform",`translate(0,${PH})`).call(
+    d3.axisBottom(x).ticks(5).tickFormat(d3.format("d")));
+  xAxisG.selectAll("text").attr("fill","#b0b8c4").attr("font-size",11);
+  xAxisG.selectAll(".domain,.tick line").attr("stroke","rgba(255,255,255,0.1)");
+
+  // Player name labels (y axis)
+  DATA.forEach(d => {
+    g.append("text")
+      .attr("x", -8).attr("y", y(d.player) + y.bandwidth()/2)
+      .attr("text-anchor","end").attr("dominant-baseline","middle")
+      .attr("fill", d.color).attr("font-size", 12).attr("font-weight","700")
+      .text(d.player);
+  });
+
+  // Answer line
+  if (ANSWER != null) {
+    g.append("line")
+      .attr("x1", x(ANSWER)).attr("x2", x(ANSWER))
+      .attr("y1", -8).attr("y2", PH + 8)
+      .attr("stroke","#ffd166").attr("stroke-width", 2)
+      .attr("stroke-dasharray","5,3");
+    g.append("text")
+      .attr("x", x(ANSWER)).attr("y", -12)
+      .attr("text-anchor","middle").attr("fill","#ffd166")
+      .attr("font-size",11).attr("font-weight","700")
+      .text(`Answer: ${ANSWER}`);
+  }
+
+  // Tooltip
+  const tip = d3.select("body").append("div")
+    .style("position","fixed").style("pointer-events","none")
+    .style("background","rgba(10,20,35,0.95)")
+    .style("border","1px solid #2a4060").style("border-radius","8px")
+    .style("padding","9px 13px").style("font-size","12px")
+    .style("color","#e8eef5").style("opacity",0)
+    .style("transition","opacity .15s").style("line-height","1.6")
+    .style("box-shadow","0 4px 20px rgba(0,0,0,0.5)");
+
+  // Lollipops
+  DATA.forEach(d => {
+    const cy = y(d.player) + y.bandwidth() / 2;
+    const cx = x(d.guess);
+
+    // Tail line from left edge to dot
+    g.append("line")
+      .attr("x1", x(lo - pad)).attr("x2", cx)
+      .attr("y1", cy).attr("y2", cy)
+      .attr("stroke", d.color)
+      .attr("stroke-width", d.closest ? 2.5 : 1.5)
+      .attr("opacity", d.closest ? 0.9 : 0.4);
+
+    // Guess value label above dot
+    g.append("text")
+      .attr("x", cx).attr("y", cy - y.bandwidth()/2 - 3)
+      .attr("text-anchor","middle").attr("fill", d.color)
+      .attr("font-size", d.closest ? 12 : 10).attr("font-weight","700")
+      .text(d.guess);
+
+    // Star below closest
+    if (d.closest) {
+      g.append("text")
+        .attr("x", cx).attr("y", cy + y.bandwidth()/2 + 4)
+        .attr("text-anchor","middle").attr("dominant-baseline","hanging")
+        .attr("fill","#ffd166").attr("font-size", 14)
+        .text("★");
+    }
+
+    // Dot (interactive)
+    const dot = g.append("circle")
+      .attr("cx", cx).attr("cy", cy)
+      .attr("r", d.closest ? 9 : 7)
+      .attr("fill", d.color)
+      .attr("stroke", d.closest ? "#ffd166" : "white")
+      .attr("stroke-width", d.closest ? 2 : 1)
+      .attr("class", `bq-dot bq-dot-${d.player.split(' ').join('_')}`)
+      .style("cursor","crosshair");
+
+    dot.on("mouseover", function(event) {
+        d3.select(this).attr("r", d.closest ? 12 : 10)
+          .attr("stroke-width", 2.5)
+          .style("filter", `drop-shadow(0 0 6px ${d.color})`);
+        let html = `<b style="color:${d.color};font-size:13px">${d.player}</b><br>
+                    Guess: <b>${d.guess}</b>`;
+        if (ANSWER != null) {
+          html += `<br>Distance: <b>${d.dist}</b>`;
+          html += `<br>Rank: <b>${d.rank_lbl}</b>`;
+        }
+        tip.style("opacity",1)
+           .style("left",(event.clientX+14)+"px")
+           .style("top",(event.clientY-42)+"px")
+           .html(html);
+      })
+      .on("mousemove", event => {
+        tip.style("left",(event.clientX+14)+"px").style("top",(event.clientY-42)+"px");
+      })
+      .on("mouseout", function() {
+        d3.select(this).attr("r", d.closest ? 9 : 7)
+          .attr("stroke-width", d.closest ? 2 : 1)
+          .style("filter","none");
+        tip.style("opacity",0);
+      });
+  });
+})();
+</script>
+  </div>
+</div>
+
+
+<div class="bq-card" id="bq-3">
+  <div class="bq-header" onclick="toggleBQ('bq-3')">
+    <div class="bq-header-left">
+      <span class="bq-chevron" id="bq-3-chev">▾</span>
+      <div>
+        <div class="bq-round">Group Stage - Part 3</div>
+        <div class="bq-question">Host city rainfall (in mm) on June 26th</div>
+      </div>
+    </div>
+    <div class="bq-header-right">
+      <span style="color:#ffd166;font-size:0.8rem;margin-right:12px">Pending</span>
+    </div>
+  </div>
+  <div class="bq-summary" id="bq-3-summary" style="display:none"><span style='color:#8b949e'>Pending</span></div>
+  <div class="bq-body" id="bq-3-body" style="display:block">
+    
+<div id="bq-wrap-3" style="width:100%;max-width:860px;margin:0 auto;"></div>
+<script>
+(function() {
+  const DATA    = [{"player": "Sam", "guess": 29, "color": "#E63946", "dist": null, "rank": null, "rank_lbl": null, "closest": false}, {"player": "Adrienne", "guess": 25, "color": "#457B9D", "dist": null, "rank": null, "rank_lbl": null, "closest": false}, {"player": "JohnnyJ", "guess": 6, "color": "#2A9D8F", "dist": null, "rank": null, "rank_lbl": null, "closest": false}, {"player": "Gwyn Thomas", "guess": 30, "color": "#a78bfa", "dist": null, "rank": null, "rank_lbl": null, "closest": false}, {"player": "Matt", "guess": 55, "color": "#F4A261", "dist": null, "rank": null, "rank_lbl": null, "closest": false}, {"player": "El Roxinho", "guess": 28, "color": "#60a5fa", "dist": null, "rank": null, "rank_lbl": null, "closest": false}];
+  const ANSWER  = null;
+  const svgId   = "bq-svg-3";
+
+  const W = 760, H = 468;
+  const M = { top: 20, right: 30, bottom: 36, left: 110 };
+  const PW = W - M.left - M.right;
+  const PH = H - M.top  - M.bottom;
+
+  const wrap = d3.select("#bq-wrap-3");
   const svg  = wrap.append("svg")
     .attr("id", svgId).attr("width","100%")
     .attr("viewBox", `0 0 ${W} ${H}`)
@@ -1894,7 +2293,7 @@
 <div class="bq-card" id="jk-2">
   <div class="bq-header" onclick="toggleBQ('jk-2')">
     <div class="bq-header-left">
-      <span class="bq-chevron" id="jk-2-chev">▾</span>
+      <span class="bq-chevron" id="jk-2-chev">▸</span>
       <div>
         <div class="bq-round">Group Stage - Part 2</div>
         <div class="bq-question">🃏 Round 2 Joker</div>
@@ -1903,9 +2302,9 @@
     <div class="bq-header-right"><span style='color:#4caf78;font-size:0.8rem'>All resolved ✓</span></div>
   </div>
   <div class="bq-summary" id="jk-2-summary"
-       style="display:none">Affected: <span style="color:#E63946">Sam</span> · <span style="color:#F4A261">Matt</span> · <span style="color:#60a5fa">El Roxinho</span></div>
+       style="display:block">Affected: <span style="color:#E63946">Sam</span> · <span style="color:#F4A261">Matt</span> · <span style="color:#60a5fa">El Roxinho</span></div>
   <div class="bq-body" id="jk-2-body"
-       style="display:block">
+       style="display:none">
     <div class="jk-desc-box">Choose one fixture from this round. Anybody who predicts the correct outcome for that fixture will lose 2 points. </div>
     <div class="jk-players">
 <div class="jk-player-row">
@@ -1922,6 +2321,37 @@
   <span class="jk-player-name" style="color:#60a5fa">El Roxinho</span>
   <span class="jk-arrow">→</span>
   <span class="jk-decision">Uruguay vs Cabo Verde 🤦‍♀️</span>
+</div></div>
+  </div>
+</div>
+
+
+<div class="bq-card" id="jk-3">
+  <div class="bq-header" onclick="toggleBQ('jk-3')">
+    <div class="bq-header-left">
+      <span class="bq-chevron" id="jk-3-chev">▾</span>
+      <div>
+        <div class="bq-round">Group Stage - Part 3</div>
+        <div class="bq-question">🃏 Round 3 Joker</div>
+      </div>
+    </div>
+    <div class="bq-header-right"><span style='color:#8b949e;font-size:0.8rem'>Pending</span></div>
+  </div>
+  <div class="bq-summary" id="jk-3-summary"
+       style="display:none">Affected: <span style="color:#60a5fa">El Roxinho</span> · <span style="color:#a78bfa">Gwyn Thomas</span></div>
+  <div class="bq-body" id="jk-3-body"
+       style="display:block">
+    <div class="jk-desc-box"><em style='color:#8b949e'>🤫 To be revealed…</em></div>
+    <div class="jk-players">
+<div class="jk-player-row">
+  <span class="jk-player-name" style="color:#60a5fa">El Roxinho</span>
+  <span class="jk-arrow">→</span>
+  <span class="jk-decision"><em style='color:#f4a261'>😈 Be afraid…</em></span>
+</div>
+<div class="jk-player-row">
+  <span class="jk-player-name" style="color:#a78bfa">Gwyn Thomas</span>
+  <span class="jk-arrow">→</span>
+  <span class="jk-decision"><em style='color:#f4a261'>😈 Be afraid…</em></span>
 </div></div>
   </div>
 </div>
@@ -2086,12 +2516,20 @@ function toggleBQ(id) {
   chev.textContent      = open ? '▸' : '▾';
 }
 
-function psBannerToggle() {
-  const bar = document.getElementById('ps-bar');
-  const btn = bar.querySelector('.ps-toggle');
-  const collapsed = bar.classList.toggle('collapsed');
-  btn.textContent = collapsed ? '▼ show' : '▲ hide';
+function psOpenToggle() {
+  const fab     = document.getElementById('ps-fab');
+  const popover = document.getElementById('ps-popover');
+  const open    = popover.classList.toggle('open');
+  fab.classList.toggle('active', open);
 }
+
+// Close popover when clicking outside
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#ps-fab') && !e.target.closest('#ps-popover')) {
+    document.getElementById('ps-popover').classList.remove('open');
+    document.getElementById('ps-fab').classList.remove('active');
+  }
+});
 
 function scrollToRound(anchorId) {
   const target   = document.getElementById(anchorId);
@@ -2111,12 +2549,14 @@ function scrollToRound(anchorId) {
 const SELECTED = new Set(["Sam", "Adrienne", "JohnnyJ", "Gwyn Thomas", "Matt", "El Roxinho"]);
 
 function _updateHint() {
-  const hint = document.querySelector('.ps-collapsed-hint');
-  if (!hint) return;
+  const fab   = document.getElementById('ps-fab');
+  const label = document.getElementById('ps-fab-label');
+  if (!label) return;
   const n = SELECTED.size;
-  if (n === 0)             hint.textContent = 'None highlighted';
-  else if (n === 6) hint.textContent = 'All highlighted';
-  else                     hint.textContent = `${n} highlighted`;
+  if (n === 0)                label.textContent = 'Highlight players';
+  else if (n === 6) label.textContent = 'Highlight players';
+  else                        label.textContent = `${n} highlighted`;
+  fab.classList.toggle('partial', n > 0 && n < 6);
 }
 
 function _dispatchPS() {
