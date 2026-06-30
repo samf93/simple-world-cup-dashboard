@@ -425,7 +425,7 @@
 <header>
   <h1><span class="emoji">⚽</span>World Cup 2026 Prediction Contest</h1>
   <p style="color:var(--muted);font-size:0.75rem;margin-top:5px;letter-spacing:0.03em;">
-    Last updated 30 June 2026, 07:54 CEST
+    Last updated 30 June 2026, 07:58 CEST
   </p>
   <div class="round-progress"><span class="rp-label">Round of 32</span><span class="rp-bar-wrap"><span class="rp-bar" style="width:25%"></span></span><span class="rp-frac">4/16</span></div>
 </header>
@@ -511,7 +511,8 @@
       .attr("stroke","white").attr("stroke-width",.8)
       .attr("opacity",.25).attr("stroke-dasharray","4,3");
     g.append("text")
-      .attr("x", bx + 4).attr("y", PH - 4)
+      .attr("x", bx - 4).attr("y", PH - 4)
+      .attr("text-anchor", "end")
       .attr("fill","white").attr("opacity",.45)
       .attr("font-size", 10).attr("dominant-baseline","auto")
       .text(b.name);
