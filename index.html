@@ -298,9 +298,9 @@
     color: var(--accent); border-color: var(--accent);
   }
   .ps-fab-dot {
-    width: 7px; height: 7px; border-radius: 50%;
+    width: 0; height: 7px; border-radius: 50%;
     background: var(--accent); flex-shrink: 0;
-    width: 0; opacity: 0;  /* shown only when selection is partial */
+    opacity: 0;  /* shown only when selection is partial */
     transition: opacity .2s, width .2s;
   }
   .ps-fab.partial .ps-fab-dot { opacity: 1; width: 7px; }
@@ -363,7 +363,11 @@
   }
   .bq-header:hover { background: rgba(255,209,102,0.05); }
   .bq-header-left { display: flex; align-items: center; gap: 12px; }
-  .bq-chevron { color: var(--accent); font-size: 1.1rem; width: 14px; flex-shrink: 0; }
+  .bq-chevron {
+    color: var(--accent); font-size: 1.1rem; width: 14px; flex-shrink: 0;
+    display: inline-block; transition: transform .2s ease;
+  }
+  .bq-chevron.open { transform: rotate(90deg); }
   .bq-round   { font-size: 0.7rem; color: var(--muted); text-transform: uppercase;
                  letter-spacing: 0.06em; margin-bottom: 2px; }
   .bq-question { font-size: 0.9rem; font-weight: 600; color: var(--text); }
@@ -383,8 +387,18 @@
     border-radius: 8px; padding: 10px 14px;
   }
   .jk-player-name { font-weight: 700; font-size: 0.9rem; min-width: 90px; flex-shrink: 0; }
+  .jk-player-row.dimmed { opacity: 0.3; }
   .jk-arrow    { color: var(--muted); font-size: 0.85rem; flex-shrink: 0; }
   .jk-decision { font-size: 0.88rem; color: var(--text); line-height: 1.5; }
+  .pending-dot {
+    display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+    background: #8b949e; margin-right: 6px; vertical-align: middle;
+    animation: pendingPulse 1.5s ease-in-out infinite;
+  }
+  @keyframes pendingPulse {
+    0%, 100% { opacity: 0.35; }
+    50%      { opacity: 1; }
+  }
 
   /* ── News ticker ── */
   .ticker-wrap {
@@ -425,7 +439,7 @@
 <header>
   <h1><span class="emoji">⚽</span>World Cup 2026 Prediction Contest</h1>
   <p style="color:var(--muted);font-size:0.75rem;margin-top:5px;letter-spacing:0.03em;">
-    Last updated 1 July 2026, 08:52 CEST
+    Last updated 1 July 2026, 11:17 CEST
   </p>
   <div class="round-progress"><span class="rp-label">Round of 32</span><span class="rp-bar-wrap"><span class="rp-bar" style="width:43%"></span></span><span class="rp-frac">7/16</span></div>
 </header>
@@ -2313,17 +2327,17 @@
 <div class="bq-card" id="bq-4">
   <div class="bq-header" onclick="toggleBQ('bq-4')">
     <div class="bq-header-left">
-      <span class="bq-chevron" id="bq-4-chev">▾</span>
+      <span class="bq-chevron open" id="bq-4-chev">▸</span>
       <div>
         <div class="bq-round">Round of 32</div>
         <div class="bq-question">Coca Cola closing stock price (in USD) on July 2nd</div>
       </div>
     </div>
     <div class="bq-header-right">
-      <span style="color:#ffd166;font-size:0.8rem;margin-right:12px">Pending</span>
+      <span style="color:#ffd166;font-size:0.8rem;margin-right:12px"><span class="pending-dot"></span>Pending</span>
     </div>
   </div>
-  <div class="bq-summary" id="bq-4-summary" style="display:none"><span style='color:#8b949e'>Pending</span></div>
+  <div class="bq-summary" id="bq-4-summary" style="display:none"><span class='pending-dot'></span><span style='color:#8b949e'>Pending</span></div>
   <div class="bq-body" id="bq-4-body" style="display:block">
     
 <div id="bq-wrap-4" style="width:100%;max-width:860px;margin:0 auto;"></div>
@@ -2630,22 +2644,22 @@
     <div class="bq-header-right"><span style='color:#4caf78;font-size:0.8rem'>All resolved ✓</span></div>
   </div>
   <div class="bq-summary" id="jk-2-summary"
-       style="display:block">Affected: <span style="color:#E63946">Sam</span> · <span style="color:#F4A261">Matt</span> · <span style="color:#60a5fa">El Roxinho</span></div>
+       style="display:block">Affected: <span class="bq-ps-name" data-ps-player="Sam" data-ps-color="#E63946" style="color:#E63946">Sam</span> · <span class="bq-ps-name" data-ps-player="Matt" data-ps-color="#F4A261" style="color:#F4A261">Matt</span> · <span class="bq-ps-name" data-ps-player="El Roxinho" data-ps-color="#60a5fa" style="color:#60a5fa">El Roxinho</span></div>
   <div class="bq-body" id="jk-2-body"
        style="display:none">
     <div class="jk-desc-box">Choose one fixture from this round. Anybody who predicts the correct outcome for that fixture will lose 2 points. </div>
     <div class="jk-players">
-<div class="jk-player-row">
+<div class="jk-player-row" data-p="Sam">
   <span class="jk-player-name" style="color:#E63946">Sam</span>
   <span class="jk-arrow">→</span>
   <span class="jk-decision">Spain vs Saudi Arabia 😈</span>
 </div>
-<div class="jk-player-row">
+<div class="jk-player-row" data-p="Matt">
   <span class="jk-player-name" style="color:#F4A261">Matt</span>
   <span class="jk-arrow">→</span>
   <span class="jk-decision">Argentina vs Austria 🔥</span>
 </div>
-<div class="jk-player-row">
+<div class="jk-player-row" data-p="El Roxinho">
   <span class="jk-player-name" style="color:#60a5fa">El Roxinho</span>
   <span class="jk-arrow">→</span>
   <span class="jk-decision">Uruguay vs Cabo Verde 🤦‍♀️</span>
@@ -2666,17 +2680,17 @@
     <div class="bq-header-right"><span style='color:#4caf78;font-size:0.8rem'>All resolved ✓</span></div>
   </div>
   <div class="bq-summary" id="jk-3-summary"
-       style="display:block">Affected: <span style="color:#60a5fa">El Roxinho</span> · <span style="color:#a78bfa">Gwyn Thomas</span></div>
+       style="display:block">Affected: <span class="bq-ps-name" data-ps-player="El Roxinho" data-ps-color="#60a5fa" style="color:#60a5fa">El Roxinho</span> · <span class="bq-ps-name" data-ps-player="Gwyn Thomas" data-ps-color="#a78bfa" style="color:#a78bfa">Gwyn Thomas</span></div>
   <div class="bq-body" id="jk-3-body"
        style="display:none">
     <div class="jk-desc-box">Choose a fixture. For this fixture and the 3 that follow, every home win prediction will be switched to an away win and vice versa.</div>
     <div class="jk-players">
-<div class="jk-player-row">
+<div class="jk-player-row" data-p="El Roxinho">
   <span class="jk-player-name" style="color:#60a5fa">El Roxinho</span>
   <span class="jk-arrow">→</span>
   <span class="jk-decision">Bosnia and Herzegovina vs Qatar 💪💪💪💩</span>
 </div>
-<div class="jk-player-row">
+<div class="jk-player-row" data-p="Gwyn Thomas">
   <span class="jk-player-name" style="color:#a78bfa">Gwyn Thomas</span>
   <span class="jk-arrow">→</span>
   <span class="jk-decision">Japan vs Sweden 🤷💩🤷💪</span>
@@ -2688,26 +2702,26 @@
 <div class="bq-card" id="jk-4">
   <div class="bq-header" onclick="toggleBQ('jk-4')">
     <div class="bq-header-left">
-      <span class="bq-chevron" id="jk-4-chev">▾</span>
+      <span class="bq-chevron open" id="jk-4-chev">▸</span>
       <div>
         <div class="bq-round">Round of 32</div>
         <div class="bq-question">🃏 Round 4 Joker</div>
       </div>
     </div>
-    <div class="bq-header-right"><span style='color:#8b949e;font-size:0.8rem'>Pending</span></div>
+    <div class="bq-header-right"><span class='pending-dot'></span><span style='color:#8b949e;font-size:0.8rem'>Pending</span></div>
   </div>
   <div class="bq-summary" id="jk-4-summary"
-       style="display:none">Affected: <span style="color:#a78bfa">Gwyn Thomas</span> · <span style="color:#2A9D8F">JohnnyJ</span></div>
+       style="display:none">Affected: <span class="bq-ps-name" data-ps-player="Gwyn Thomas" data-ps-color="#a78bfa" style="color:#a78bfa">Gwyn Thomas</span> · <span class="bq-ps-name" data-ps-player="JohnnyJ" data-ps-color="#2A9D8F" style="color:#2A9D8F">JohnnyJ</span></div>
   <div class="bq-body" id="jk-4-body"
        style="display:block">
     <div class="jk-desc-box"><em style='color:#8b949e'>🤫 To be revealed…</em></div>
     <div class="jk-players">
-<div class="jk-player-row">
+<div class="jk-player-row" data-p="Gwyn Thomas">
   <span class="jk-player-name" style="color:#a78bfa">Gwyn Thomas</span>
   <span class="jk-arrow">→</span>
   <span class="jk-decision"><em style='color:#f4a261'>😈 Be afraid…</em></span>
 </div>
-<div class="jk-player-row">
+<div class="jk-player-row" data-p="JohnnyJ">
   <span class="jk-player-name" style="color:#2A9D8F">JohnnyJ</span>
   <span class="jk-arrow">→</span>
   <span class="jk-decision"><em style='color:#f4a261'>😈 Be afraid…</em></span>
@@ -2876,7 +2890,7 @@ function toggleBQ(id) {
   const open    = body.style.display !== 'none';
   body.style.display    = open ? 'none'  : 'block';
   summary.style.display = open ? 'block' : 'none';
-  chev.textContent      = open ? '▸' : '▾';
+  chev.classList.toggle('open', !open);
 }
 
 function psOpenToggle() {
@@ -2932,7 +2946,8 @@ function psToggle(p, btn) {
   } else {
     SELECTED.add(p);
   }
-  btn.classList.toggle('on', SELECTED.has(p));
+  const on = SELECTED.has(p);
+  btn.classList.toggle('on', on);
   const allBtn = document.getElementById('ps-all');
   const allOn  = SELECTED.size === 6;
   allBtn.classList.toggle('on', allOn);
@@ -2960,19 +2975,26 @@ function psAll() {
 
 // Fire initial selection to apply highlight state on page load
 document.addEventListener('DOMContentLoaded', () => { _updateHint(); _dispatchPS(); });
+
+// Bonus + joker ps listener
 document.addEventListener('ps', e => {
   const sel = e.detail;
+  // Dim joker player rows for deselected players
+  document.querySelectorAll('.jk-player-row').forEach(row => {
+    row.classList.toggle('dimmed', !sel.has(row.dataset.p));
+  });
+  // Dim bonus lollipop dots
   document.querySelectorAll('.bq-dot').forEach(el => {
     const cls  = [...el.classList].find(c => c.startsWith('bq-dot-'));
     if (!cls) return;
     const name = cls.slice('bq-dot-'.length).split('_').join(' ');
     el.style.opacity = sel.has(name) ? '' : '0.1';
   });
-  // Highlight player names in collapsed bonus summaries
+  // Highlight player names in collapsed bonus/joker summaries
   document.querySelectorAll('.bq-ps-name').forEach(el => {
     const p     = el.getAttribute('data-ps-player');
     const color = el.getAttribute('data-ps-color');
-    el.style.color = sel.has(p) ? (color || '#e8eef5') : '#8b949e';
+    el.style.color      = sel.has(p) ? (color || '#e8eef5') : '#8b949e';
     el.style.fontWeight = sel.has(p) ? '700' : '400';
   });
 });
