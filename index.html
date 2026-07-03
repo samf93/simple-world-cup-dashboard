@@ -444,7 +444,7 @@
 <header>
   <h1><span class="emoji">⚽</span>World Cup 2026 Prediction Contest</h1>
   <p style="color:var(--muted);font-size:0.75rem;margin-top:5px;letter-spacing:0.03em;">
-    Last updated 3 July 2026, 06:13 CEST
+    Last updated 3 July 2026, 16:12 CEST
   </p>
   <div class="round-progress"><span class="rp-label">Round of 32</span><span class="rp-bar-wrap"><span class="rp-bar" data-pct="75"></span></span><span class="rp-frac">12/16</span></div>
 </header>
@@ -544,25 +544,25 @@
   xAxisTicks.forEach(i => {
     g.append("text")
       .attr("x", x(i)).attr("y", PH + 18)
-      .attr("text-anchor","middle").attr("fill","#b0b8c4").attr("font-size", 10)
+      .attr("text-anchor","middle").attr("fill","#b0b8c4").attr("font-size", 11)
       .text(STEPS[i].x_label);
   });
 
   // ── Y axis ──────────────────────────────────────────────────────────────────
-  const yAxis = d3.axisLeft(y).ticks(6).tickFormat(d => d === 0 ? "Lead" : `-${d}`);
+  const yAxis = d3.axisLeft(y).ticks(6).tickFormat(d => d === 0 ? "Lead" : d);
   const yAxisG = g.append("g").call(yAxis);
-  yAxisG.selectAll("text").attr("fill","#b0b8c4").attr("font-size", 10);
+  yAxisG.selectAll("text").attr("fill","#b0b8c4").attr("font-size", 11);
   yAxisG.selectAll(".domain,.tick line").attr("stroke","rgba(255,255,255,0.1)");
 
   // Axis labels
   g.append("text")
     .attr("x", PW/2).attr("y", PH + 42)
-    .attr("text-anchor","middle").attr("fill","#b0b8c4").attr("font-size",11)
+    .attr("text-anchor","middle").attr("fill","#b0b8c4").attr("font-size",12)
     .text("Fixture");
   g.append("text")
     .attr("transform","rotate(-90)")
     .attr("x", -PH/2).attr("y", -42)
-    .attr("text-anchor","middle").attr("fill","#b0b8c4").attr("font-size",11)
+    .attr("text-anchor","middle").attr("fill","#b0b8c4").attr("font-size",12)
     .text("Points behind leader");
 
   // ── Tooltip element ──────────────────────────────────────────────────────────
@@ -590,7 +590,7 @@
 
     lblEls[p] = g.append("text")
       .attr("x", PW + 10).attr("fill", col)
-      .attr("font-size", 12).attr("font-weight","bold")
+      .attr("font-size", 13).attr("font-weight","bold")
       .attr("dominant-baseline","middle")
       .text(p);
   });
@@ -624,7 +624,7 @@
       // Find the visible player whose line is closest in Y at that step
       let nearestP = null, nearestDy = Infinity;
       PLAYERS.forEach(p => {
-        if (!SELECTED.has(p)) return;
+        if (typeof SELECTED !== 'undefined' && !SELECTED.has(p)) return;
         const dy = Math.abs(y(GAPS[p][best]) - my);
         if (dy < nearestDy) { nearestDy = dy; nearestP = p; }
       });
@@ -699,7 +699,7 @@
       const lbl = gap === 0 ? `${p}  ●` : `${p}  -${gap}`;
       (animate ? lblEls[p].transition().duration(dur) : lblEls[p])
         .attr("y", ly).text(lbl)
-        .attr("font-size", isLeader ? 13 : 11);
+        .attr("font-size", isLeader ? 14 : 12);
     });
 
     document.getElementById("race-label").innerHTML = STEPS[stepIdx].tooltip;
@@ -1563,7 +1563,7 @@
       g.append("text")
         .attr("x", x(q.x)).attr("y", y(q.y) + li * 16)
         .attr("text-anchor","middle").attr("dominant-baseline","middle")
-        .attr("fill", q.color).attr("font-size", 13)
+        .attr("fill", q.color).attr("font-size", 14)
         .attr("font-weight","bold").attr("opacity",.4)
         .text(line);
     });
@@ -1574,21 +1574,21 @@
   const yAxis = d3.axisLeft(y).ticks(5).tickFormat(d3.format(".1f"));
 
   const xAxisG = g.append("g").attr("transform", `translate(0,${PH})`).call(xAxis);
-  xAxisG.selectAll("text").attr("fill","#b0b8c4").attr("font-size", 10);
+  xAxisG.selectAll("text").attr("fill","#b0b8c4").attr("font-size", 12);
   xAxisG.selectAll(".domain,.tick line").attr("stroke","rgba(255,255,255,0.1)");
 
   const yAxisG = g.append("g").call(yAxis);
-  yAxisG.selectAll("text").attr("fill","#b0b8c4").attr("font-size", 10);
+  yAxisG.selectAll("text").attr("fill","#b0b8c4").attr("font-size", 12);
   yAxisG.selectAll(".domain,.tick line").attr("stroke","rgba(255,255,255,0.1)");
 
   g.append("text")
     .attr("x", PW/2).attr("y", PH + 44)
-    .attr("text-anchor","middle").attr("fill","#b0b8c4").attr("font-size",11)
+    .attr("text-anchor","middle").attr("fill","#b0b8c4").attr("font-size",12)
     .text("Contrarianism (0 = follows the crowd, 1 = bucks the trend)");
   g.append("text")
     .attr("transform","rotate(-90)")
     .attr("x", -PH/2).attr("y", -46)
-    .attr("text-anchor","middle").attr("fill","#b0b8c4").attr("font-size",11)
+    .attr("text-anchor","middle").attr("fill","#b0b8c4").attr("font-size",12)
     .text("Accuracy (proportion of outcomes predicted correctly)");
 
   // ── Tooltip ───────────────────────────────────────────────────────────────────
@@ -1650,7 +1650,7 @@
       });
     lblEls[p]  = g.append("text")
       .attr("x", PW + 10).attr("fill", color(p))
-      .attr("font-size", 12).attr("font-weight","bold")
+      .attr("font-size", 13).attr("font-weight","bold")
       .attr("dominant-baseline","middle")
       .text(p);
   });
@@ -1692,7 +1692,7 @@
     .attr("x2", d => d[1].cx).attr("y2", d => d[1].cy)
     .attr("stroke-width", (d, i) => Math.max(0.5, 2.5 * (1 - i / hist.length)))
     .attr("opacity", (d, i) =>
-      SELECTED.has(p) ? 0.55 * (1 - i / hist.length) : 0.03);  // SELECTED is the global ps Set
+      (typeof SELECTED === 'undefined' || SELECTED.has(p)) ? 0.55 * (1 - i / hist.length) : 0.03);
 
     // Remove stale segments if history shrunk
     trailEls[p].attr("d", "");   // keep the placeholder path
